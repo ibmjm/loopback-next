@@ -3,11 +3,10 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {IncomingMessage, ServerResponse} from 'http';
 import * as http from 'http';
+import {IncomingMessage, ServerResponse} from 'http';
 import * as https from 'https';
-import {AddressInfo} from 'net';
-
+import {AddressInfo, ListenOptions} from 'net';
 import pEvent from 'p-event';
 
 export type RequestListener = (
@@ -16,23 +15,12 @@ export type RequestListener = (
 ) => void;
 
 /**
- * Basic HTTP server listener options
- *
- * @export
- * @interface ListenerOptions
- */
-export interface ListenerOptions {
-  host?: string;
-  port?: number;
-}
-
-/**
  * HTTP server options
  *
  * @export
  * @interface HttpOptions
  */
-export interface HttpOptions extends ListenerOptions {
+export interface HttpOptions extends ListenOptions {
   protocol?: 'http';
 }
 
@@ -42,7 +30,7 @@ export interface HttpOptions extends ListenerOptions {
  * @export
  * @interface HttpsOptions
  */
-export interface HttpsOptions extends ListenerOptions, https.ServerOptions {
+export interface HttpsOptions extends ListenOptions, https.ServerOptions {
   protocol: 'https';
 }
 
@@ -69,14 +57,12 @@ export type HttpProtocol = 'http' | 'https'; // Will be extended to `http2` in t
  * @class HttpServer
  */
 export class HttpServer {
-  private _port: number;
-  private _host?: string;
   private _listening: boolean = false;
   private _protocol: HttpProtocol;
-  private _address: AddressInfo;
+  private _address: string | AddressInfo;
   private requestListener: RequestListener;
   readonly server: http.Server | https.Server;
-  private serverOptions?: HttpServerOptions;
+  private serverOptions: HttpServerOptions;
 
   /**
    * @param requestListener
@@ -87,9 +73,14 @@ export class HttpServer {
     serverOptions?: HttpServerOptions,
   ) {
     this.requestListener = requestListener;
-    this.serverOptions = serverOptions;
-    this._port = serverOptions ? serverOptions.port || 0 : 0;
-    this._host = serverOptions ? serverOptions.host : undefined;
+    this.serverOptions = Object.assign(
+      {port: 0, host: undefined},
+      serverOptions,
+    );
+    if (this.serverOptions.path) {
+      // Remove `port` so that `path` is honored
+      delete this.serverOptions.port;
+    }
     this._protocol = serverOptions ? serverOptions.protocol || 'http' : 'http';
     if (this._protocol === 'https') {
       this.server = https.createServer(
@@ -105,10 +96,10 @@ export class HttpServer {
    * Starts the HTTP / HTTPS server
    */
   public async start() {
-    this.server.listen(this._port, this._host);
+    this.server.listen(this.serverOptions);
     await pEvent(this.server, 'listening');
     this._listening = true;
-    this._address = this.server.address() as AddressInfo;
+    this._address = this.server.address();
   }
 
   /**
@@ -132,20 +123,26 @@ export class HttpServer {
    * Port number of the HTTP / HTTPS server
    */
   public get port(): number {
-    return (this._address && this._address.port) || this._port;
+    if (typeof this._address === 'string') return 0;
+    return (this._address && this._address.port) || this.serverOptions.port!;
   }
 
   /**
    * Host of the HTTP / HTTPS server
    */
   public get host(): string | undefined {
-    return (this._address && this._address.address) || this._host;
+    if (typeof this._address === 'string') return undefined;
+    return (this._address && this._address.address) || this.serverOptions.host;
   }
 
   /**
    * URL of the HTTP / HTTPS server
    */
   public get url(): string {
+    if (typeof this._address === 'string') {
+      const basePath = encodeURIComponent(this._address);
+      return `${this.protocol}+unix://${basePath}`;
+    }
     let host = this.host;
     if (this._address.family === 'IPv6') {
       if (host === '::') host = '::1';
@@ -166,7 +163,7 @@ export class HttpServer {
   /**
    * Address of the HTTP / HTTPS server
    */
-  public get address(): AddressInfo | undefined {
+  public get address(): string | AddressInfo | undefined {
     return this._listening ? this._address : undefined;
   }
 }
