@@ -426,7 +426,7 @@ exports.getDataSourceConnectorName = function(datasourcesDir, dataSourceClass) {
     jsonFileContent = JSON.parse(fs.readFileSync(datasourceJSONFile, 'utf8'));
   } catch (err) {
     debug(`Error reading file ${datasourceJSONFile}: ${err.message}`);
-    throw err;
+    err.message = `Cannot load ${datasourceJSONFile}: ${err.message}`;
   }
 
   if (jsonFileContent.connector) {
