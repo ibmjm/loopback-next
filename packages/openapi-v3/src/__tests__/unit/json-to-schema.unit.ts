@@ -3,11 +3,9 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {expect} from '@loopback/testlab';
-
-import {SchemaObject} from '@loopback/openapi-v3-types';
-import {jsonToSchemaObject, jsonOrBooleanToJSON} from '../..';
 import {JsonSchema} from '@loopback/repository-json-schema';
+import {expect} from '@loopback/testlab';
+import {jsonOrBooleanToJSON, jsonToSchemaObject, SchemaObject} from '../..';
 
 describe('jsonToSchemaObject', () => {
   it('does nothing when given an empty object', () => {
@@ -79,11 +77,27 @@ describe('jsonToSchemaObject', () => {
     });
 
     it('is converted properly when it is "false"', () => {
-      const noAdditionalDef: JsonSchema = {
+      const jsonSchema: JsonSchema = {
         additionalProperties: false,
       };
-      const expectedDef: SchemaObject = {};
-      propertyConversionTest(noAdditionalDef, expectedDef);
+
+      const openApiSchema = jsonToSchemaObject(jsonSchema);
+
+      expect(openApiSchema).to.deepEqual({
+        additionalProperties: false,
+      });
+    });
+
+    it('is converted properly when it is "true"', () => {
+      const jsonSchema: JsonSchema = {
+        additionalProperties: true,
+      };
+
+      const openApiSchema = jsonToSchemaObject(jsonSchema);
+
+      expect(openApiSchema).to.deepEqual({
+        additionalProperties: true,
+      });
     });
   });
 
@@ -108,6 +122,7 @@ describe('jsonToSchemaObject', () => {
           type: 'string',
         },
       },
+      additionalProperties: false,
       default: 'Default string',
     };
     const expectedDef: SchemaObject = {
@@ -118,9 +133,139 @@ describe('jsonToSchemaObject', () => {
           type: 'string',
         },
       },
+      additionalProperties: false,
       default: 'Default string',
     };
     expect(jsonToSchemaObject(inputDef)).to.eql(expectedDef);
+  });
+
+  it('handles circular references with $ref', () => {
+    const schemaJson: JsonSchema = {
+      title: 'ReportState',
+      properties: {
+        // ReportState[]
+        states: {type: 'array', items: {$ref: '#/definitions/ReportState'}},
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      },
+    };
+    const schema = jsonToSchemaObject(schemaJson);
+    expect(schema).to.eql({
+      title: 'ReportState',
+      properties: {
+        states: {
+          type: 'array',
+          items: {$ref: '#/components/schemas/ReportState'},
+        },
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      },
+    });
+  });
+
+  it('handles circular references with object', () => {
+    const schemaJson: JsonSchema = {
+      title: 'ReportState',
+      properties: {
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      },
+    };
+    // Add states: ReportState[]
+    schemaJson.properties!.states = {type: 'array', items: schemaJson};
+    const schema = jsonToSchemaObject(schemaJson);
+    expect(schema).to.eql({
+      title: 'ReportState',
+      properties: {
+        states: {
+          type: 'array',
+          items: {$ref: '#/components/schemas/ReportState'},
+        },
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      },
+    });
+  });
+
+  it('handles indirect circular references with $ref', () => {
+    const schemaJson: JsonSchema = {
+      title: 'ReportState',
+      properties: {
+        parentState: {$ref: '#/definitions/ParentState'},
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      },
+      definitions: {
+        ParentState: {
+          title: 'ParentState',
+          properties: {
+            timestamp: {type: 'string'},
+            state: {$ref: '#/definitions/ReportState'},
+          },
+        },
+      },
+    };
+    const schema = jsonToSchemaObject(schemaJson);
+    expect(schema).to.eql({
+      title: 'ReportState',
+      properties: {
+        parentState: {$ref: '#/components/schemas/ParentState'},
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      },
+      definitions: {
+        ParentState: {
+          title: 'ParentState',
+          properties: {
+            timestamp: {type: 'string'},
+            state: {$ref: '#/components/schemas/ReportState'},
+          },
+        },
+      },
+    });
+  });
+
+  it('handles indirect circular references with object', () => {
+    const parentStateSchema: JsonSchema = {
+      title: 'ParentState',
+      properties: {
+        timestamp: {type: 'string'},
+        // state: {$ref: '#/definitions/ReportState'},
+      },
+    };
+
+    const schemaJson: JsonSchema = {
+      title: 'ReportState',
+      properties: {
+        parentState: {$ref: '#/definitions/ParentState'},
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      },
+      definitions: {
+        ParentState: parentStateSchema,
+      },
+    };
+
+    parentStateSchema.properties!.state = schemaJson;
+
+    const schema = jsonToSchemaObject(schemaJson);
+    expect(schema).to.eql({
+      title: 'ReportState',
+      properties: {
+        parentState: {$ref: '#/components/schemas/ParentState'},
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      },
+      definitions: {
+        ParentState: {
+          title: 'ParentState',
+          properties: {
+            timestamp: {type: 'string'},
+            state: {$ref: '#/components/schemas/ReportState'},
+          },
+        },
+      },
+    });
   });
 
   it('errors if type is an array and items is missing', () => {
@@ -133,9 +278,22 @@ describe('jsonToSchemaObject', () => {
     );
   });
 
+  it('copies first example from examples', () => {
+    const itemsDef: JsonSchema = {
+      type: 'integer',
+      examples: [100, 500],
+    };
+    const expectedItems: SchemaObject = {
+      type: 'integer',
+      example: 100,
+      examples: [100, 500],
+    };
+    propertyConversionTest(itemsDef, expectedItems);
+  });
+
   // Helper function to check conversion of JSON Schema properties
   // to Swagger versions
-  function propertyConversionTest(property: Object, expected: Object) {
+  function propertyConversionTest(property: object, expected: object) {
     expect(jsonToSchemaObject(property)).to.deepEqual(expected);
   }
 });

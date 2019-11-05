@@ -3,12 +3,12 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {ControllerSpec} from '@loopback/openapi-v3';
 import {
+  ControllerSpec,
   OperationObject,
   ParameterObject,
   PathObject,
-} from '@loopback/openapi-v3-types';
+} from '@loopback/openapi-v3';
 import * as assert from 'assert';
 import * as debugFactory from 'debug';
 import * as HttpErrors from 'http-errors';
@@ -85,7 +85,7 @@ export class RoutingTable {
 
   /**
    * Register a route
-   * @param route A route entry
+   * @param route - A route entry
    */
   registerRoute(route: RouteEntry) {
     // TODO(bajtos) handle the case where opSpec.parameters contains $ref

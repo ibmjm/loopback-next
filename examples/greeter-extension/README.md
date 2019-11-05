@@ -16,7 +16,7 @@ We'll use the following scenario to walk through important steps to organize the
 `greet` service that allows extensible languages - each of them being supported
 by a `Greeter` extension.
 
-![greeters](greeters.png)
+![greeters](https://raw.githubusercontent.com/strongloop/loopback-next/master/examples/greeter-extension/greeters.png)
 
 Various constructs from LoopBack 4, such as `Context`, `@inject.*`, and
 `Component` are used to build the service in an extensible fashion.
@@ -126,7 +126,7 @@ export class GreetingService {
   // ...
   /**
    * Find a greeter that can speak the given language
-   * @param language Language code for the greeting
+   * @param language - Language code for the greeting
    */
   async findGreeter(language: string): Promise<Greeter | undefined> {
     // Get the latest list of greeters
@@ -137,8 +137,8 @@ export class GreetingService {
 
   /**
    * Greet in the given language
-   * @param language Language code
-   * @param name Name
+   * @param language - Language code
+   * @param name - Name
    */
   async greet(language: string, name: string): Promise<string> {
     let greeting: string = '';
@@ -169,7 +169,7 @@ knowing much about one another.
 
 ```ts
 import {Greeter, asGreeter} from '../types';
-import {bind, inject} from '@loopback/context';
+import {bind, config} from '@loopback/context';
 
 /**
  * Options for the Chinese greeter
@@ -190,7 +190,7 @@ export class ChineseGreeter implements Greeter {
     /**
      * Inject the configuration for ChineseGreeter
      */
-    @inject('greeters.ChineseGreeter.options', {optional: true})
+    @config()
     private options: ChineseGreeterOptions = {nameFirst: true},
   ) {}
 
@@ -244,7 +244,7 @@ import {GREETING_SERVICE} from './keys';
  * Define a component to register the greeter extension point and built-in
  * extensions
  */
-export class GreeterComponent implements Component {
+export class GreetingComponent implements Component {
   bindings = [
     createBindingFromClass(GreetingService, {
       key: GREETING_SERVICE,
@@ -283,7 +283,7 @@ app.add(createBindingFromClass(FrenchGreeter));
 The registration can be done using a component too:
 
 ```ts
-export class GreeterComponent implements Component {
+export class GreetingComponent implements Component {
   bindings = [
     // ...
     createBindingFromClass(EnglishGreeter),
@@ -308,7 +308,7 @@ export class GreetingService {
      * An extension point should be able to receive its options via dependency
      * injection.
      */
-    @configuration() // Sugar for @inject('services.GreetingService.options', {optional: true})
+    @config()
     public readonly options?: GreetingServiceOptions,
   ) {}
 }
@@ -318,7 +318,8 @@ export class GreetingService {
 
 ```ts
 // Configure the extension point
-app.bind('services.GreetingService.options').to({color: 'blue'});
+import {GREETING_SERVICE} from './keys';
+app.configure(GREETING_SERVICE).to({color: 'blue'});
 ```
 
 ## Configure an extension
@@ -336,7 +337,7 @@ export class ChineseGreeter implements Greeter {
     /**
      * Inject the configuration for ChineseGreeter
      */
-    @inject('greeters.ChineseGreeter.options', {optional: true})
+    @config()
     private options: ChineseGreeterOptions = {nameFirst: true},
   ) {}
 }
@@ -346,7 +347,7 @@ export class ChineseGreeter implements Greeter {
 
 ```ts
 // Configure the ChineseGreeter
-app.bind('greeters.ChineseGreeter.options').to({nameFirst: false});
+app.configure('greeters.ChineseGreeter').to({nameFirst: false});
 ```
 
 ## Contributions
@@ -360,8 +361,8 @@ Run `npm start` from the root folder to run the sample application. You should
 see the following message:
 
 ```
-English: Hello, Raymond
-Chinese: Raymond，你好
+English: Hello, Raymond!
+Chinese: Raymond，你好！
 ```
 
 ## Tests

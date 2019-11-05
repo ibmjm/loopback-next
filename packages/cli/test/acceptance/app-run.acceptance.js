@@ -25,6 +25,7 @@ describe('app-generator (SLOW)', function() {
 
   before('scaffold a new application', async function createAppProject() {
     // Increase the timeout to 1 minute to accommodate slow CI build machines
+    // eslint-disable-next-line no-invalid-this
     this.timeout(60 * 1000);
     await helpers
       .run(generator)
@@ -35,8 +36,9 @@ describe('app-generator (SLOW)', function() {
   });
 
   before('install dependencies', async function installDependencies() {
-    // Run `lerna bootstrap --scope @loopback/sandbox-app`
+    // Run `lerna bootstrap --scope @loopback/sandbox-app --include-filtered-dependencies`
     // WARNING: It takes a while to run `lerna bootstrap`
+    // eslint-disable-next-line no-invalid-this
     this.timeout(15 * 60 * 1000);
     process.chdir(rootDir);
     await lernaBootstrap(appName);
@@ -45,6 +47,7 @@ describe('app-generator (SLOW)', function() {
   it('passes `npm test` for the generated project', function() {
     // Increase the timeout to 5 minutes,
     // the tests can take more than 2 seconds to run.
+    // eslint-disable-next-line no-invalid-this
     this.timeout(5 * 60 * 1000);
 
     return new Promise((resolve, reject) => {
@@ -63,6 +66,7 @@ describe('app-generator (SLOW)', function() {
 
   after(function() {
     // Increase the timeout to accommodate slow CI build machines
+    // eslint-disable-next-line no-invalid-this
     this.timeout(30 * 1000);
 
     process.chdir(rootDir);
@@ -71,12 +75,20 @@ describe('app-generator (SLOW)', function() {
   });
 });
 
-async function lernaBootstrap(scope) {
+async function lernaBootstrap(...scopes) {
   const cmd = bootstrapCommandFactory({
     _: [],
     ci: false,
-    scope: scope,
-    loglevel: 'silent',
+    scope: scopes,
+    includeFilteredDependencies: true,
+    // The option "scope" controls both
+    // - which packages to bootstrap
+    // - which monorepo-local dependencies to resolve via symlinks
+    // The option "forceLocal" tells lerna to always symlink local packages.
+    // See https://github.com/lerna/lerna/commit/71174e4709 and
+    // https://github.com/lerna/lerna/pull/2104
+    forceLocal: true,
+    loglevel: 'warn',
     // Disable progress bars
     progress: false,
   });

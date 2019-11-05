@@ -3,7 +3,7 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Model, model, getModelRelations} from '@loopback/repository';
+import {getModelRelations, Model, model} from '@loopback/repository';
 import {JSONSchema6 as JsonSchema} from 'json-schema';
 
 @model({settings: {strict: false}})
@@ -18,7 +18,7 @@ const scopeFilter = getFilterJsonSchemaFor(EmptyModel);
  * Note we don't take the model properties into account yet and return
  * a generic json schema allowing any "where" condition.
  *
- * @param modelCtor The model constructor to build the filter schema for.
+ * @param modelCtor - The model constructor to build the filter schema for.
  */
 export function getFilterJsonSchemaFor(modelCtor: typeof Model): JsonSchema {
   const schema: JsonSchema = {
@@ -34,7 +34,8 @@ export function getFilterJsonSchemaFor(modelCtor: typeof Model): JsonSchema {
 
       limit: {
         type: 'integer',
-        minimum: 0,
+        minimum: 1,
+        examples: [100],
       },
 
       skip: {
@@ -49,6 +50,7 @@ export function getFilterJsonSchemaFor(modelCtor: typeof Model): JsonSchema {
         },
       },
     },
+    additionalProperties: false,
   };
 
   const modelRelations = getModelRelations(modelCtor);
@@ -79,7 +81,7 @@ export function getFilterJsonSchemaFor(modelCtor: typeof Model): JsonSchema {
  * Note we don't take the model properties into account yet and return
  * a generic json schema allowing any "where" condition.
  *
- * @param modelCtor The model constructor to build the filter schema for.
+ * @param modelCtor - The model constructor to build the filter schema for.
  */
 export function getWhereJsonSchemaFor(modelCtor: typeof Model): JsonSchema {
   const schema: JsonSchema = {
@@ -95,7 +97,7 @@ export function getWhereJsonSchemaFor(modelCtor: typeof Model): JsonSchema {
  * Build a JSON schema describing the format of the "fields" object
  * used to include or exclude properties of model instances.
  *
- * @param modelCtor The model constructor to build the filter schema for.
+ * @param modelCtor - The model constructor to build the filter schema for.
  */
 
 export function getFieldsJsonSchemaFor(modelCtor: typeof Model): JsonSchema {
@@ -107,7 +109,7 @@ export function getFieldsJsonSchemaFor(modelCtor: typeof Model): JsonSchema {
         [k]: {type: 'boolean'},
       })),
     ),
-    additionalProperties: !modelCtor.definition.settings.strict,
+    additionalProperties: modelCtor.definition.settings.strict === false,
   };
   return schema;
 }

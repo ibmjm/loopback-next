@@ -3,6 +3,230 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.3](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.9.2...@loopback/testlab@1.9.3) (2019-10-24)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.9.2](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.9.1...@loopback/testlab@1.9.2) (2019-10-07)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.9.1](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.9.0...@loopback/testlab@1.9.1) (2019-09-28)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+# [1.9.0](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.8.1...@loopback/testlab@1.9.0) (2019-09-27)
+
+
+### Features
+
+* implement TestSandbox.writeTextFile ([59ca3a0](https://github.com/strongloop/loopback-next/commit/59ca3a0))
+
+
+
+
+
+## [1.8.1](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.8.0...@loopback/testlab@1.8.1) (2019-09-17)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+# [1.8.0](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.7.5...@loopback/testlab@1.8.0) (2019-09-06)
+
+
+### Features
+
+* **testlab:** add TestLab.writeJsonFile ([baa993b](https://github.com/strongloop/loopback-next/commit/baa993b))
+
+
+
+
+
+## [1.7.5](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.7.4...@loopback/testlab@1.7.5) (2019-09-03)
+
+
+### Bug Fixes
+
+* make givenHttpServerConfig typing compatible with TypeScript 3.6 ([1edbc0b](https://github.com/strongloop/loopback-next/commit/1edbc0b))
+
+
+
+
+
+## [1.7.4](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.7.3...@loopback/testlab@1.7.4) (2019-08-19)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.7.3](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.7.2...@loopback/testlab@1.7.3) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.7.2](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.7.1...@loopback/testlab@1.7.2) (2019-07-31)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.7.1](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.7.0...@loopback/testlab@1.7.1) (2019-07-26)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+# [1.7.0](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.6.3...@loopback/testlab@1.7.0) (2019-07-17)
+
+
+### Features
+
+* **testlab:** improve typings for `toJSON()` helper ([a64e860](https://github.com/strongloop/loopback-next/commit/a64e860))
+
+
+
+
+
+## [1.6.3](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.6.2...@loopback/testlab@1.6.3) (2019-06-28)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.6.2](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.6.1...@loopback/testlab@1.6.2) (2019-06-21)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.6.1](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.6.0...@loopback/testlab@1.6.1) (2019-06-20)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+# [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.5.0...@loopback/testlab@1.6.0) (2019-06-17)
+
+
+### Features
+
+* **testlab:** add `skipIf` helper ([48f3703](https://github.com/strongloop/loopback-next/commit/48f3703))
+
+
+
+
+
+# [1.5.0](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.4.0...@loopback/testlab@1.5.0) (2019-06-06)
+
+
+### Features
+
+* **testlab:** add generic helper `skipOnTravis` ([3221d9f](https://github.com/strongloop/loopback-next/commit/3221d9f))
+
+
+
+
+
+# [1.4.0](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.3.0...@loopback/testlab@1.4.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+# [1.3.0](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.11...@loopback/testlab@1.3.0) (2019-05-31)
+
+
+### Features
+
+* **testlab:** rework itSkippedOnTravis to support Jest framework ([c7e14ca](https://github.com/strongloop/loopback-next/commit/c7e14ca))
+
+
+
+
+
+## [1.2.11](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.10...@loopback/testlab@1.2.11) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.2.10](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.9...@loopback/testlab@1.2.10) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.2.9](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.8...@loopback/testlab@1.2.9) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.2.8](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.7...@loopback/testlab@1.2.8) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.2.7](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.6...@loopback/testlab@1.2.7) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.2.6](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.5...@loopback/testlab@1.2.6) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
 ## [1.2.5](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.4...@loopback/testlab@1.2.5) (2019-04-20)
 
 **Note:** Version bump only for package @loopback/testlab

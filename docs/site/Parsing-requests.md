@@ -33,7 +33,7 @@ class TodoController {
     @param.path.number('id') id: number,
     @requestBody() todo: Todo,
   ): Promise<boolean> {
-    return await this.todoRepo.replaceById(id, todo);
+    return this.todoRepo.replaceById(id, todo);
   }
 }
 ```
@@ -74,7 +74,7 @@ async replaceTodo(
   // NO need to do the "string to number" convertion now,
   // coercion automatically handles it for you.
   id = +id;
-  return await this.todoRepo.replaceById(id, todo);
+  return this.todoRepo.replaceById(id, todo);
 }
 ```
 
@@ -121,10 +121,9 @@ decimal like "1.23" would be rejected.
 
 You can specify a parameter's type by calling shortcut decorators of `@param`
 like `@param.query.integer()`. A list of available shortcuts can be found in the
-[API Docs](https://apidocs.strongloop.com/@loopback%2fdocs/openapi-v3.html#param).
-Check out the section on
-[parameter decorators](Decorators.md#parameter-decorator) for instructions on
-how to decorate the controller parameter.
+[API Docs](https://loopback.io/doc/en/lb4/apidocs.openapi-v3.param.html). Check
+out the section on [parameter decorators](Decorators.md#parameter-decorator) for
+instructions on how to decorate the controller parameter.
 
 Here are our default validation rules for each type:
 
@@ -158,7 +157,7 @@ import {Todo} from './models';
     @param.path.number('id') id: number,
     @requestBody() todo: Todo,
   ): Promise<boolean> {
-    return await this.todoRepo.replaceById(id, todo);
+    return this.todoRepo.replaceById(id, todo);
   }
 ...
 ```
@@ -330,7 +329,7 @@ class FileUploadController {
         else {
           resolve({
             files: request.files,
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fields: (request as any).fields,
           });
         }

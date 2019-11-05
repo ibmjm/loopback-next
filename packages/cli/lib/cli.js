@@ -13,10 +13,10 @@ const PREFIX = 'loopback4:';
 
 /**
  * Parse arguments and run corresponding command
- * @param env Yeoman env
+ * @param env - Yeoman env
  * @param {*} opts Command options
- * @param log Log function
- * @param dryRun flag for dryRun (for testing)
+ * @param log - Log function
+ * @param dryRun - flag for dryRun (for testing)
  */
 function runCommand(env, opts, log, dryRun) {
   const args = opts._;
@@ -48,7 +48,7 @@ function runCommand(env, opts, log, dryRun) {
  * Set up yeoman generators
  */
 function setupGenerators() {
-  var env = yeoman.createEnv();
+  const env = yeoman.createEnv();
   env.register(path.join(__dirname, '../generators/app'), PREFIX + 'app');
   env.register(
     path.join(__dirname, '../generators/extension'),
@@ -61,6 +61,10 @@ function setupGenerators() {
   env.register(
     path.join(__dirname, '../generators/datasource'),
     PREFIX + 'datasource',
+  );
+  env.register(
+    path.join(__dirname, '../generators/import-lb3-models'),
+    PREFIX + 'import-lb3-models',
   );
   env.register(path.join(__dirname, '../generators/model'), PREFIX + 'model');
   env.register(
@@ -84,8 +88,16 @@ function setupGenerators() {
     PREFIX + 'observer',
   );
   env.register(
+    path.join(__dirname, '../generators/interceptor'),
+    PREFIX + 'interceptor',
+  );
+  env.register(
     path.join(__dirname, '../generators/discover'),
     PREFIX + 'discover',
+  );
+  env.register(
+    path.join(__dirname, '../generators/relation'),
+    PREFIX + 'relation',
   );
   return env;
 }
@@ -109,11 +121,11 @@ function printVersions(log) {
 /**
  * Print a list of available commands
  * @param {*} env Yeoman env
- * @param log Log function
+ * @param log - Log function
  */
 function printCommands(env, log) {
-  log('Available commands: ');
-  var list = Object.keys(env.getGeneratorsMeta())
+  log('Available commands:');
+  const list = Object.keys(env.getGeneratorsMeta())
     .filter(name => /^loopback4:/.test(name))
     .map(name => name.replace(/^loopback4:/, '  lb4 '));
   log(list.join('\n'));
@@ -126,7 +138,7 @@ function main(opts, log, dryRun) {
     return;
   }
 
-  var env = setupGenerators();
+  const env = setupGenerators();
 
   // list generators
   if (opts.commands) {

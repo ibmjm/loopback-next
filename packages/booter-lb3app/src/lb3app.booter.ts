@@ -62,6 +62,20 @@ export class Lb3AppBooter implements Booter {
       this.mountRoutesOnly(lb3App, spec);
     }
 
+    const dataSources = lb3App.dataSources;
+    if (dataSources) {
+      const visited: unknown[] = [];
+      Object.keys(dataSources).forEach(key => {
+        const ds = dataSources[key];
+        if (visited.includes(ds)) return;
+        visited.push(ds);
+        this.app
+          .bind(`datasources.lb3-${key}`)
+          .to(ds)
+          .tag('datasource');
+      });
+    }
+
     // TODO(bajtos) Listen for the following events to update the OpenAPI spec:
     // - modelRemoted
     // - modelDeleted
@@ -75,6 +89,10 @@ export class Lb3AppBooter implements Booter {
     debug('Loading LB3 app from', this.appPath);
     const lb3App = require(this.appPath);
 
+    debug(
+      'If your LB3 app does not boot correctly then make sure it is using loopback-boot version 3.2.1 or higher.',
+    );
+
     if (lb3App.booting) {
       debug('  waiting for boot process to finish');
       // Wait until the legacy LB3 app boots
@@ -85,11 +103,23 @@ export class Lb3AppBooter implements Booter {
   }
 
   private async buildOpenApiSpec(lb3App: Lb3Application) {
-    const swaggerSpec = generateSwaggerSpec(lb3App);
-    const result = await swagger2openapi.convertObj(swaggerSpec, {
+    const swaggerSpec = generateSwaggerSpec(lb3App, {
+      generateOperationScopedModels: true,
+    });
+
+    // remove any properties that have values that are functions before
+    // converting, as `convertObj` can't handle function values
+    const fixedSwaggerSpec = JSON.parse(JSON.stringify(swaggerSpec));
+
+    const result = await swagger2openapi.convertObj(fixedSwaggerSpec, {
       // swagger2openapi options
     });
-    return result.openapi as OpenApiSpec;
+
+    let spec = result.openapi as OpenApiSpec;
+    if (typeof this.options.specTransformer === 'function') {
+      spec = this.options.specTransformer(spec);
+    }
+    return spec;
   }
 
   private mountFullApp(lb3App: Lb3Application, spec: OpenApiSpec) {
@@ -116,8 +146,10 @@ export interface Lb3AppBooterOptions {
   path: string;
   mode: 'fullApp' | 'restRouter';
   restApiRoot: string;
+  specTransformer?: (spec: OpenApiSpec) => OpenApiSpec;
 }
 
 interface Lb3Application extends ExpressApplication {
   handler(name: 'rest'): ExpressRequestHandler;
+  dataSources?: {[name: string]: unknown};
 }

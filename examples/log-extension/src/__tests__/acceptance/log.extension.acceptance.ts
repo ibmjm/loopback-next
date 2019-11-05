@@ -3,44 +3,37 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {
-  RestApplication,
-  SequenceHandler,
-  RestBindings,
-  FindRoute,
-  ParseParams,
-  InvokeMethod,
-  Send,
-  Reject,
-  RequestContext,
-} from '@loopback/rest';
+import {inject} from '@loopback/context';
 import {get, param} from '@loopback/openapi-v3';
 import {
+  FindRoute,
+  InvokeMethod,
+  ParseParams,
+  Reject,
+  RequestContext,
+  RestApplication,
+  RestBindings,
+  Send,
+  SequenceHandler,
+} from '@loopback/rest';
+import {Client, createClientForHandler, expect, sinon} from '@loopback/testlab';
+import chalk from 'chalk';
+import {
+  EXAMPLE_LOG_BINDINGS,
+  HighResTime,
+  log,
+  LogFn,
   LogMixin,
   LOG_LEVEL,
-  log,
-  EXAMPLE_LOG_BINDINGS,
-  LogFn,
-  HighResTime,
 } from '../..';
-import {
-  sinon,
-  SinonSpy,
-  Client,
-  createClientForHandler,
-  expect,
-} from '@loopback/testlab';
-import {inject} from '@loopback/context';
-import chalk from 'chalk';
+import {logToMemory, resetLogs} from '../in-memory-logger';
+import {AddSpy, createLogSpy, restoreLogSpy} from '../log-spy';
 
 const SequenceActions = RestBindings.SequenceActions;
 
-import {createLogSpy, restoreLogSpy} from '../log-spy';
-import {logToMemory, resetLogs} from '../in-memory-logger';
-
 describe('log extension acceptance test', () => {
   let app: LogApp;
-  let spy: SinonSpy;
+  let spy: AddSpy;
 
   class LogApp extends LogMixin(RestApplication) {}
 
@@ -215,9 +208,9 @@ describe('log extension acceptance test', () => {
       async handle(context: RequestContext): Promise<void> {
         const {request, response} = context;
 
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let args: any = [];
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let result: any;
 
         try {

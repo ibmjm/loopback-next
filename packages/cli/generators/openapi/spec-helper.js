@@ -11,7 +11,7 @@ const {
   isExtension,
   titleCase,
   debugJson,
-  kebabCase,
+  toFileName,
   camelCase,
   escapeIdentifier,
 } = require('./utils');
@@ -209,9 +209,7 @@ function buildMethodSpec(controllerSpec, op, options) {
       if (p.in === 'path') {
         paramName = paramName.replace(/[^\w]+/g, '_');
       }
-      return `@param({name: '${paramName}', in: '${p.in}'}) ${name}: ${
-        pType.signature
-      }`;
+      return `@param({name: '${paramName}', in: '${p.in}'}) ${name}: ${pType.signature}`;
     });
   }
   if (op.spec.requestBody) {
@@ -367,7 +365,7 @@ function getControllerFileName(controllerName) {
       controllerName.length - 'Controller'.length,
     );
   }
-  return kebabCase(name) + '.controller.ts';
+  return toFileName(name) + '.controller.ts';
 }
 
 module.exports = {

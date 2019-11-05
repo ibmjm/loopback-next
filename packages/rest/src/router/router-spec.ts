@@ -3,15 +3,17 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {OpenApiSpec} from '@loopback/openapi-v3-types';
+import {OpenApiSpec} from '@loopback/openapi-v3';
 
 export type RouterSpec = Pick<OpenApiSpec, 'paths' | 'components' | 'tags'>;
 
 export function assignRouterSpec(target: RouterSpec, additions: RouterSpec) {
-  if (additions.components && additions.components.schemas) {
+  if (additions.components) {
     if (!target.components) target.components = {};
-    if (!target.components.schemas) target.components.schemas = {};
-    Object.assign(target.components.schemas, additions.components.schemas);
+    for (const key in additions.components) {
+      if (!target.components[key]) target.components[key] = {};
+      Object.assign(target.components[key], additions.components[key]);
+    }
   }
 
   for (const url in additions.paths) {

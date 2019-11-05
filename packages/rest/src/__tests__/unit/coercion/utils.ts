@@ -3,7 +3,7 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {OperationObject, ParameterObject} from '@loopback/openapi-v3-types';
+import {OperationObject, ParameterObject} from '@loopback/openapi-v3';
 import {
   expect,
   ShotRequestOptions,
@@ -68,11 +68,13 @@ export async function testCoercion<T>(config: TestArgs<T>) {
         pathParams.aparameter = config.rawValue;
         break;
       case 'query':
-        const q = qs.stringify(
-          {aparameter: config.rawValue},
-          {encodeValuesOnly: true},
-        );
-        url += `?${q}`;
+        {
+          const q = qs.stringify(
+            {aparameter: config.rawValue},
+            {encodeValuesOnly: true},
+          );
+          url += `?${q}`;
+        }
         break;
       case 'header':
       case 'cookie':

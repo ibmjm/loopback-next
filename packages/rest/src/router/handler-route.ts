@@ -3,8 +3,8 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Context} from '@loopback/context';
-import {OperationObject} from '@loopback/openapi-v3-types';
+import {Context, invokeMethodWithInterceptors} from '@loopback/context';
+import {OperationObject} from '@loopback/openapi-v3';
 import {OperationArgs, OperationRetval} from '../types';
 import {BaseRoute} from './base-route';
 
@@ -30,6 +30,8 @@ export class Route extends BaseRoute {
     requestContext: Context,
     args: OperationArgs,
   ): Promise<OperationRetval> {
-    return await this._handler(...args);
+    // Use `invokeMethodWithInterceptors` to invoke the handler function so
+    // that global interceptors are applied
+    return invokeMethodWithInterceptors(requestContext, this, '_handler', args);
   }
 }

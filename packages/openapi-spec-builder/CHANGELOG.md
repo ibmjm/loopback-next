@@ -3,6 +3,209 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.17](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.16...@loopback/openapi-spec-builder@1.2.17) (2019-10-24)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.16](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.15...@loopback/openapi-spec-builder@1.2.16) (2019-10-07)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.15](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.14...@loopback/openapi-spec-builder@1.2.15) (2019-09-28)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.14](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.13...@loopback/openapi-spec-builder@1.2.14) (2019-09-27)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.13](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.12...@loopback/openapi-spec-builder@1.2.13) (2019-09-17)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.12](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.11...@loopback/openapi-spec-builder@1.2.12) (2019-09-06)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.11](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.10...@loopback/openapi-spec-builder@1.2.11) (2019-09-03)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.10](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.9...@loopback/openapi-spec-builder@1.2.10) (2019-08-19)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.9](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.8...@loopback/openapi-spec-builder@1.2.9) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.8](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.7...@loopback/openapi-spec-builder@1.2.8) (2019-07-31)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.7](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.6...@loopback/openapi-spec-builder@1.2.7) (2019-07-26)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.6](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.5...@loopback/openapi-spec-builder@1.2.6) (2019-07-17)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.5](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.4...@loopback/openapi-spec-builder@1.2.5) (2019-06-28)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.4](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.3...@loopback/openapi-spec-builder@1.2.4) (2019-06-21)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.3](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.2...@loopback/openapi-spec-builder@1.2.3) (2019-06-20)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.2](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.1...@loopback/openapi-spec-builder@1.2.2) (2019-06-17)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.2.1](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.2.0...@loopback/openapi-spec-builder@1.2.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+# [1.2.0](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.13...@loopback/openapi-spec-builder@1.2.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.1.13](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.12...@loopback/openapi-spec-builder@1.1.13) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.1.12](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.11...@loopback/openapi-spec-builder@1.1.12) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.1.11](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.10...@loopback/openapi-spec-builder@1.1.11) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.1.10](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.9...@loopback/openapi-spec-builder@1.1.10) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.1.9](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.8...@loopback/openapi-spec-builder@1.1.9) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.1.8](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.7...@loopback/openapi-spec-builder@1.1.8) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
+## [1.1.7](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.6...@loopback/openapi-spec-builder@1.1.7) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/openapi-spec-builder
+
+
+
+
+
 ## [1.1.6](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-spec-builder@1.1.5...@loopback/openapi-spec-builder@1.1.6) (2019-04-20)
 
 **Note:** Version bump only for package @loopback/openapi-spec-builder

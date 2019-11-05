@@ -191,7 +191,7 @@ describe('Binding', () => {
     });
   });
 
-  describe('toAlias(bindingKeyWithPath)', async () => {
+  describe('toAlias(bindingKeyWithPath)', () => {
     it('binds to another binding with sync value', () => {
       ctx.bind('parent.options').to({child: {disabled: true}});
       ctx.bind('child.options').toAlias('parent.options#child');
@@ -227,6 +227,13 @@ describe('Binding', () => {
       return expect(ctx.get('child.options')).to.be.rejectedWith(
         /The key 'parent.options' is not bound to any value in context/,
       );
+    });
+
+    it('allows optional if binding does not have a value getter', () => {
+      // This can happen for `@inject.binding`
+      ctx.bind('child.options');
+      const childOptions = ctx.getSync('child.options', {optional: true});
+      expect(childOptions).to.be.undefined();
     });
 
     it('allows optional if alias binding cannot be resolved', () => {

@@ -3,9 +3,22 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {PropertyDefinition} from '@loopback/repository';
+import {
+  Model,
+  model,
+  property,
+  PropertyDefinition,
+  RelationDefinitionBase,
+  RelationType,
+} from '@loopback/repository';
 import {expect} from '@loopback/testlab';
-import {metaToJsonProperty, stringTypeToWrapper} from '../..';
+import {
+  buildModelCacheKey,
+  getNavigationalPropertyForRelation,
+  metaToJsonProperty,
+  modelToJsonSchema,
+  stringTypeToWrapper,
+} from '../..';
 
 describe('build-schema', () => {
   class CustomType {}
@@ -188,6 +201,136 @@ describe('build-schema', () => {
         maxLength: 50,
         minLength: 5,
       });
+    });
+  });
+
+  describe('modelToJsonSchema', () => {
+    it('allows recursive model definition', () => {
+      @model()
+      class ReportState extends Model {
+        @property.array(ReportState, {})
+        states: ReportState[];
+
+        @property({
+          type: 'string',
+        })
+        benchmarkId?: string;
+
+        @property({
+          type: 'string',
+        })
+        color?: string;
+
+        constructor(data?: Partial<ReportState>) {
+          super(data);
+        }
+      }
+      const schema = modelToJsonSchema(ReportState, {});
+      expect(schema.properties).to.containEql({
+        states: {
+          type: 'array',
+          items: {$ref: '#/definitions/ReportState'},
+        },
+        benchmarkId: {type: 'string'},
+        color: {type: 'string'},
+      });
+      // No circular references in definitions
+      expect(schema.definitions).to.be.undefined();
+    });
+  });
+
+  describe('getNavigationalPropertyForRelation', () => {
+    it('errors out if targetsMany is undefined', () => {
+      expect(() =>
+        getNavigationalPropertyForRelation(
+          {
+            type: RelationType.hasMany,
+            name: 'Test',
+          } as RelationDefinitionBase,
+          {
+            $ref: `#/definitions/Test`,
+          },
+        ),
+      ).to.throw(/targetsMany attribute missing for Test/);
+    });
+  });
+
+  describe('buildModelCacheKey', () => {
+    it('returns "modelOnly" when no options were provided', () => {
+      const key = buildModelCacheKey();
+      expect(key).to.equal('modelOnly');
+    });
+
+    it('returns "modelWithRelations" when a single option "includeRelations" is set', () => {
+      const key = buildModelCacheKey({includeRelations: true});
+      expect(key).to.equal('modelWithRelations');
+    });
+
+    it('returns "partial" when a single option "partial" is set', () => {
+      const key = buildModelCacheKey({partial: true});
+      expect(key).to.equal('modelPartial');
+    });
+
+    it('returns "excluding_id-_rev_" when a single option "exclude" is set', () => {
+      const key = buildModelCacheKey({exclude: ['id', '_rev']});
+      expect(key).to.equal('modelExcluding_id-_rev_');
+    });
+
+    it('does not include "exclude" in concatenated option names if it is empty', () => {
+      const key = buildModelCacheKey({
+        partial: true,
+        exclude: [],
+        includeRelations: true,
+      });
+      expect(key).to.equal('modelPartialWithRelations');
+    });
+
+    it('returns "optional_id-_rev_" when "optional" is set with two items', () => {
+      const key = buildModelCacheKey({optional: ['id', '_rev']});
+      expect(key).to.equal('modelOptional_id-_rev_');
+    });
+
+    it('does not include "optional" in concatenated option names if it is empty', () => {
+      const key = buildModelCacheKey({
+        partial: true,
+        optional: [],
+        includeRelations: true,
+      });
+      expect(key).to.equal('modelPartialWithRelations');
+    });
+
+    it('does not include "partial" in option names if "optional" is not empty', () => {
+      const key = buildModelCacheKey({
+        partial: true,
+        optional: ['name'],
+      });
+      expect(key).to.equal('modelOptional_name_');
+    });
+
+    it('includes "partial" in option names if "optional" is empty', () => {
+      const key = buildModelCacheKey({
+        partial: true,
+        optional: [],
+      });
+      expect(key).to.equal('modelPartial');
+    });
+
+    it('returns concatenated option names except "partial" otherwise', () => {
+      const key = buildModelCacheKey({
+        // important: object keys are defined in reverse order
+        partial: true,
+        exclude: ['id', '_rev'],
+        optional: ['name'],
+        includeRelations: true,
+      });
+      expect(key).to.equal(
+        'modelOptional_name_Excluding_id-_rev_WithRelations',
+      );
+    });
+
+    it('includes custom title', () => {
+      const key = buildModelCacheKey({title: 'NewProduct', partial: true});
+      expect(key).to.equal('modelNewProductPartial');
     });
   });
 });

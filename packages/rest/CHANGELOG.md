@@ -3,6 +3,284 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.22.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.21.0...@loopback/rest@1.22.0) (2019-10-24)
+
+
+### Bug Fixes
+
+* **openapi-v3:** preserve `additionalProperties: false` ([bc7691b](https://github.com/strongloop/loopback-next/commit/bc7691b0963ee297922bd4d9652a0eccf763f085))
+
+
+### Features
+
+* improve debug logs for schema generators ([da88cdf](https://github.com/strongloop/loopback-next/commit/da88cdf9c75b0ca498b86f7cd5729f78a4b160f7))
+* simplify model schema with excluded properties ([b554ac8](https://github.com/strongloop/loopback-next/commit/b554ac8a08a518f112d111ebabcac48279ada7f8))
+
+
+
+
+
+# [1.21.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.20.1...@loopback/rest@1.21.0) (2019-10-07)
+
+
+### Features
+
+* **rest:** add listenOnStart flag to control http listening for a rest server ([2c5a131](https://github.com/strongloop/loopback-next/commit/2c5a131))
+
+
+
+
+
+## [1.20.1](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.20.0...@loopback/rest@1.20.1) (2019-09-28)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+# [1.20.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.19.0...@loopback/rest@1.20.0) (2019-09-27)
+
+
+### Features
+
+* **rest:** added support for sockets and pipes to RestServer ([e48ebb8](https://github.com/strongloop/loopback-next/commit/e48ebb8))
+* **rest:** allow developers to transform AJV error objects ([8c05b57](https://github.com/strongloop/loopback-next/commit/8c05b57))
+* self host oas spec by default on relative path in explorer ([887556e](https://github.com/strongloop/loopback-next/commit/887556e))
+
+
+
+
+
+# [1.19.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.18.1...@loopback/rest@1.19.0) (2019-09-17)
+
+
+### Features
+
+* **eslint-config:** enable "no-misused-promises" rule ([88d5494](https://github.com/strongloop/loopback-next/commit/88d5494))
+
+
+
+
+
+## [1.18.1](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.18.0...@loopback/rest@1.18.1) (2019-09-06)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+# [1.18.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.17.0...@loopback/rest@1.18.0) (2019-09-03)
+
+
+### Bug Fixes
+
+* make givenHttpServerConfig typing compatible with TypeScript 3.6 ([1edbc0b](https://github.com/strongloop/loopback-next/commit/1edbc0b))
+
+
+### Features
+
+* **core:** allow application to accept a parent context ([ee50007](https://github.com/strongloop/loopback-next/commit/ee50007))
+
+
+
+
+
+# [1.17.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.8...@loopback/rest@1.17.0) (2019-08-19)
+
+
+### Features
+
+* **rest:** add support for ajv-keywords ([f7bb80d](https://github.com/strongloop/loopback-next/commit/f7bb80d))
+
+
+
+
+
+## [1.16.8](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.7...@loopback/rest@1.16.8) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+## [1.16.7](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.6...@loopback/rest@1.16.7) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+## [1.16.6](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.5...@loopback/rest@1.16.6) (2019-07-31)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+## [1.16.5](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.4...@loopback/rest@1.16.5) (2019-07-26)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+## [1.16.4](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.3...@loopback/rest@1.16.4) (2019-07-17)
+
+
+### Bug Fixes
+
+* **rest:** correctly handle basePath set via basePath() API ([2118d80](https://github.com/strongloop/loopback-next/commit/2118d80))
+
+
+
+
+
+## [1.16.3](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.2...@loopback/rest@1.16.3) (2019-06-28)
+
+
+### Bug Fixes
+
+* **rest:** honor options for AJV validator caching ([1fd52a3](https://github.com/strongloop/loopback-next/commit/1fd52a3))
+* address violations of "no-floating-promises" rule ([0947531](https://github.com/strongloop/loopback-next/commit/0947531))
+
+
+
+
+
+## [1.16.2](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.1...@loopback/rest@1.16.2) (2019-06-21)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+## [1.16.1](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.16.0...@loopback/rest@1.16.1) (2019-06-20)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+# [1.16.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.15.0...@loopback/rest@1.16.0) (2019-06-17)
+
+
+### Features
+
+* **rest:** expose request body validation options to be configurable ([00ec6df](https://github.com/strongloop/loopback-next/commit/00ec6df))
+* **rest:** set nullable to true by default for AJV validations ([73ad6ad](https://github.com/strongloop/loopback-next/commit/73ad6ad))
+
+
+
+
+
+# [1.15.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.14.0...@loopback/rest@1.15.0) (2019-06-06)
+
+
+### Features
+
+* **testlab:** add generic helper `skipOnTravis` ([3221d9f](https://github.com/strongloop/loopback-next/commit/3221d9f))
+
+
+
+
+
+# [1.14.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.13.1...@loopback/rest@1.14.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.13.1](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.13.0...@loopback/rest@1.13.1) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+# [1.13.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.12.0...@loopback/rest@1.13.0) (2019-05-30)
+
+
+### Bug Fixes
+
+* specify the type for handler ([9e0119d](https://github.com/strongloop/loopback-next/commit/9e0119d))
+
+
+### Features
+
+* helpers for building JSON/OpenAPI schema referencing shared definitions ([bf07ff9](https://github.com/strongloop/loopback-next/commit/bf07ff9))
+
+
+
+
+
+# [1.12.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.11.2...@loopback/rest@1.12.0) (2019-05-23)
+
+
+### Features
+
+* **context:** leave local bindings and parent unchanged during close ([198af88](https://github.com/strongloop/loopback-next/commit/198af88))
+
+
+
+
+
+## [1.11.2](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.11.1...@loopback/rest@1.11.2) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+## [1.11.1](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.11.0...@loopback/rest@1.11.1) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/rest
+
+
+
+
+
+# [1.11.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.10.5...@loopback/rest@1.11.0) (2019-05-09)
+
+
+### Bug Fixes
+
+* **rest:** assign all component properties to target spec ([af06b69](https://github.com/strongloop/loopback-next/commit/af06b69))
+
+
+### Features
+
+* **context:** add support for method interceptors ([293188d](https://github.com/strongloop/loopback-next/commit/293188d))
+
+
+
+
+
+## [1.10.5](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.10.4...@loopback/rest@1.10.5) (2019-05-06)
+
+
+### Bug Fixes
+
+* **rest:** aggressive redirection to Swagger UI ([9f0d8ca](https://github.com/strongloop/loopback-next/commit/9f0d8ca))
+
+
+
+
+
 ## [1.10.4](https://github.com/strongloop/loopback-next/compare/@loopback/rest@1.10.3...@loopback/rest@1.10.4) (2019-04-26)
 
 **Note:** Version bump only for package @loopback/rest

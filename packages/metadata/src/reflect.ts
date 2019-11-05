@@ -5,14 +5,14 @@
 
 import 'reflect-metadata';
 
-/* tslint:disable:no-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /*
  * namespaced wrapper to handle reflect api
  */
 export class NamespacedReflect {
   /**
-   * @param namespace : namespace to bind this reflect context
+   * @param namespace - Namespace to bind this reflect context
    */
   constructor(private namespace?: string) {}
 
@@ -66,9 +66,9 @@ export class NamespacedReflect {
 
   /**
    * Check if the target has corresponding metadata
-   * @param metadataKey Key
-   * @param target Target
-   * @param propertyKey Optional property key
+   * @param metadataKey - Key
+   * @param target - Target
+   * @param propertyKey - Optional property key
    */
   hasMetadata(
     metadataKey: string,
@@ -178,7 +178,6 @@ export class NamespacedReflect {
     }
   }
 
-  /* tslint:disable-next-line:no-any */
   metadata(
     metadataKey: string,
     metadataValue: any,
@@ -191,5 +190,4 @@ export class NamespacedReflect {
   }
 }
 
-/* tslint:disable-next-line:variable-name */
 export const Reflector = new NamespacedReflect('loopback');

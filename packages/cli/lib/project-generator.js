@@ -4,9 +4,12 @@
 // License text available at https://opensource.org/licenses/MIT
 
 'use strict';
+
 const BaseGenerator = require('./base-generator');
 const utils = require('./utils');
 const chalk = require('chalk');
+const cliVersion = require('../package.json').version;
+const path = require('path');
 
 module.exports = class ProjectGenerator extends BaseGenerator {
   // Note: arguments and options should be defined in the constructor.
@@ -17,7 +20,7 @@ module.exports = class ProjectGenerator extends BaseGenerator {
     // build settings for their project.
     this.buildOptions = [
       {
-        name: 'tslint',
+        name: 'eslint',
         description: 'add a linter with pre-configured lint rules',
       },
       {
@@ -30,7 +33,7 @@ module.exports = class ProjectGenerator extends BaseGenerator {
       },
       {
         name: 'loopbackBuild',
-        description: 'use @loopback/build helpers (e.g. lb-tslint)',
+        description: 'use @loopback/build helpers (e.g. lb-eslint)',
       },
       {name: 'vscode', description: 'add VSCode config files'},
     ];
@@ -53,9 +56,9 @@ module.exports = class ProjectGenerator extends BaseGenerator {
       description: 'Project root directory for the ' + this.projectType,
     });
 
-    this.option('tslint', {
+    this.option('eslint', {
       type: Boolean,
-      description: 'Enable tslint',
+      description: 'Enable eslint',
     });
 
     this.option('prettier', {
@@ -131,7 +134,8 @@ module.exports = class ProjectGenerator extends BaseGenerator {
         name: 'name',
         message: 'Project name:',
         when: this.projectInfo.name == null,
-        default: this.options.name || this.appname,
+        default:
+          this.options.name || utils.toFileName(path.basename(process.cwd())),
         validate: utils.validate,
       },
       {
@@ -160,7 +164,7 @@ module.exports = class ProjectGenerator extends BaseGenerator {
           // prompts if option was set to a directory that already exists
           utils.validateNotExisting(this.projectInfo.outdir) !== true,
         validate: utils.validateNotExisting,
-        default: utils.kebabCase(this.projectInfo.name),
+        default: utils.toFileName(this.projectInfo.name),
       },
     ];
 
@@ -211,6 +215,10 @@ module.exports = class ProjectGenerator extends BaseGenerator {
     if (this.shouldExit()) return false;
 
     this.destinationRoot(this.projectInfo.outdir);
+
+    // Store original cli version in .yo.rc.json
+    this.config.set('version', cliVersion);
+
     // First copy common files from ../../project/templates
     this.copyTemplatedFiles(
       this.templatePath('../../project/templates/**/*'),
@@ -237,8 +245,9 @@ module.exports = class ProjectGenerator extends BaseGenerator {
       },
     );
 
-    if (!this.projectInfo.tslint) {
-      this.fs.delete(this.destinationPath('tslint.*json.ejs'));
+    if (!this.projectInfo.eslint) {
+      this.fs.delete(this.destinationPath('.eslintrc.*.ejs'));
+      this.fs.delete(this.destinationPath('.eslintignore'));
     }
 
     if (!this.projectInfo.prettier) {

@@ -12,9 +12,7 @@ const inspect = require('util').inspect;
 const path = require('path');
 const chalk = require('chalk');
 const utils = require('../../lib/utils');
-const connectors = require('../datasource/connectors.json');
 const tsquery = require('../../lib/ast-helper');
-const pascalCase = require('change-case').pascalCase;
 
 const VALID_CONNECTORS_FOR_REPOSITORY = ['KeyValueModel', 'PersistedModel'];
 const KEY_VALUE_CONNECTOR = ['KeyValueModel'];
@@ -96,7 +94,7 @@ module.exports = class RepositoryGenerator extends ArtifactGenerator {
    */
   async _getModelIdProperty(modelName) {
     let fileContent = '';
-    let modelFile = path.join(
+    const modelFile = path.join(
       this.artifactInfo.modelDir,
       utils.getModelFileName(modelName),
     );
@@ -117,7 +115,7 @@ module.exports = class RepositoryGenerator extends ArtifactGenerator {
     if (!this.artifactInfo.dataSourceClass) {
       return;
     }
-    let result = utils.isConnectorOfType(
+    const result = utils.isConnectorOfType(
       KEY_VALUE_CONNECTOR,
       this.artifactInfo.datasourcesDir,
       this.artifactInfo.dataSourceClass,
@@ -233,11 +231,10 @@ module.exports = class RepositoryGenerator extends ArtifactGenerator {
     if (this.shouldExit()) return false;
 
     debug('Prompting for a datasource ');
-    let cmdDatasourceName;
     let datasourcesList;
 
     // grab the datasourcename from the command line
-    cmdDatasourceName = this.options.datasource
+    const cmdDatasourceName = this.options.datasource
       ? utils.toClassName(this.options.datasource) + 'Datasource'
       : '';
 
@@ -250,9 +247,7 @@ module.exports = class RepositoryGenerator extends ArtifactGenerator {
         true,
       );
       debug(
-        `datasourcesList from ${utils.sourceRootDir}/${
-          utils.datasourcesDir
-        } : ${datasourcesList}`,
+        `datasourcesList from ${utils.sourceRootDir}/${utils.datasourcesDir} : ${datasourcesList}`,
       );
     } catch (err) {
       return this.exit(err);
@@ -403,9 +398,7 @@ module.exports = class RepositoryGenerator extends ArtifactGenerator {
 
     if (this.options.repositoryBaseClass) {
       debug(
-        `Base repository received from command line: ${
-          this.options.repositoryBaseClass
-        }`,
+        `Base repository received from command line: ${this.options.repositoryBaseClass}`,
       );
       this.artifactInfo.repositoryBaseClass = this.options.repositoryBaseClass;
     }
@@ -444,7 +437,7 @@ module.exports = class RepositoryGenerator extends ArtifactGenerator {
       return this.exit(new Error(`${ERROR_NO_MODEL_SELECTED}`));
     } else {
       // iterate thru each selected model, infer or ask for the ID type
-      for (let item of this.artifactInfo.modelNameList) {
+      for (const item of this.artifactInfo.modelNameList) {
         this.artifactInfo.modelName = item;
 
         const prompts = [
@@ -557,7 +550,7 @@ module.exports = class RepositoryGenerator extends ArtifactGenerator {
     );
 
     this.artifactInfo.name = this.artifactInfo.modelNameList
-      ? this.artifactInfo.modelNameList.join()
+      ? this.artifactInfo.modelNameList.join(this.classNameSeparator)
       : this.artifactInfo.modelName;
 
     await super.end();

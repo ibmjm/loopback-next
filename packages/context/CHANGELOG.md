@@ -3,6 +3,273 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.23.4](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.23.3...@loopback/context@1.23.4) (2019-10-24)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+## [1.23.3](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.23.2...@loopback/context@1.23.3) (2019-10-07)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+## [1.23.2](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.23.1...@loopback/context@1.23.2) (2019-09-28)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+## [1.23.1](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.23.0...@loopback/context@1.23.1) (2019-09-27)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+# [1.23.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.22.1...@loopback/context@1.23.0) (2019-09-17)
+
+
+### Features
+
+* **context:** add more logs to simplify troubleshooting ([7752b08](https://github.com/strongloop/loopback-next/commit/7752b08))
+
+
+
+
+
+## [1.22.1](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.22.0...@loopback/context@1.22.1) (2019-09-06)
+
+
+### Bug Fixes
+
+* **context:** allow `inject` to be explicitly invoked for class ctor args ([6a0d4f2](https://github.com/strongloop/loopback-next/commit/6a0d4f2))
+
+
+
+
+
+# [1.22.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.21.4...@loopback/context@1.22.0) (2019-09-03)
+
+
+### Features
+
+* **context:** add decorator name for [@inject](https://github.com/inject).*, [@config](https://github.com/config).*, [@intercept](https://github.com/intercept) errors ([48e3231](https://github.com/strongloop/loopback-next/commit/48e3231))
+* **context:** allow [@bind](https://github.com/bind) to be applied on the same class multiple times ([ad4d22c](https://github.com/strongloop/loopback-next/commit/ad4d22c))
+
+
+
+
+
+## [1.21.4](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.21.3...@loopback/context@1.21.4) (2019-08-19)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+## [1.21.3](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.21.2...@loopback/context@1.21.3) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+## [1.21.2](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.21.1...@loopback/context@1.21.2) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+## [1.21.1](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.21.0...@loopback/context@1.21.1) (2019-07-31)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+# [1.21.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.20.3...@loopback/context@1.21.0) (2019-07-26)
+
+
+### Features
+
+* **context:** allow [@config](https://github.com/config).* to specify the target binding key ([42b7b98](https://github.com/strongloop/loopback-next/commit/42b7b98))
+* **context:** use invocation context for method dependency injection ([a8f326c](https://github.com/strongloop/loopback-next/commit/a8f326c))
+
+
+
+
+
+## [1.20.3](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.20.2...@loopback/context@1.20.3) (2019-07-17)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+## [1.20.2](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.20.1...@loopback/context@1.20.2) (2019-06-28)
+
+
+### Bug Fixes
+
+* address violations of "no-floating-promises" rule ([0947531](https://github.com/strongloop/loopback-next/commit/0947531))
+
+
+
+
+
+## [1.20.1](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.20.0...@loopback/context@1.20.1) (2019-06-21)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+# [1.20.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.19.1...@loopback/context@1.20.0) (2019-06-20)
+
+
+### Features
+
+* **context:** generalize interceptors and chain for invocations ([34d31d8](https://github.com/strongloop/loopback-next/commit/34d31d8))
+
+
+
+
+
+## [1.19.1](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.19.0...@loopback/context@1.19.1) (2019-06-17)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+# [1.19.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.18.0...@loopback/context@1.19.0) (2019-06-06)
+
+
+### Features
+
+* **context:** add `[@global](https://github.com/global)Interceptor` decorator ([1010a37](https://github.com/strongloop/loopback-next/commit/1010a37))
+
+
+
+
+
+# [1.18.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.17.1...@loopback/context@1.18.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.17.1](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.17.0...@loopback/context@1.17.1) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
+# [1.17.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.16.0...@loopback/context@1.17.0) (2019-05-30)
+
+
+### Bug Fixes
+
+* **context:** allow injection when a class decorator returns a mixin ([28cc0a0](https://github.com/strongloop/loopback-next/commit/28cc0a0))
+* **context:** allow optional for a binding without value getter ([e211a71](https://github.com/strongloop/loopback-next/commit/e211a71))
+
+
+### Features
+
+* **context:** make parent public for invocation context ([19856c6](https://github.com/strongloop/loopback-next/commit/19856c6))
+
+
+### Performance Improvements
+
+* **context:** cache description of method parameter injections ([127f7c2](https://github.com/strongloop/loopback-next/commit/127f7c2))
+
+
+
+
+
+# [1.16.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.15.0...@loopback/context@1.16.0) (2019-05-23)
+
+
+### Features
+
+* **context:** add singleValue to ContextView ([22bd57f](https://github.com/strongloop/loopback-next/commit/22bd57f))
+* **context:** leave local bindings and parent unchanged during close ([198af88](https://github.com/strongloop/loopback-next/commit/198af88))
+* **context:** support binding config and [@inject](https://github.com/inject).config ([a392852](https://github.com/strongloop/loopback-next/commit/a392852))
+
+
+
+
+
+# [1.15.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.14.0...@loopback/context@1.15.0) (2019-05-14)
+
+
+### Features
+
+* **context:** add binding comparator to sort bindings ([ae3d61f](https://github.com/strongloop/loopback-next/commit/ae3d61f))
+
+
+
+
+
+# [1.14.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.13.0...@loopback/context@1.14.0) (2019-05-10)
+
+
+### Bug Fixes
+
+* **context:** close invocation context only after async is done ([e71e990](https://github.com/strongloop/loopback-next/commit/e71e990))
+
+
+### Features
+
+* **context:** add more getters for InvocationContext ([12a3ecb](https://github.com/strongloop/loopback-next/commit/12a3ecb))
+
+
+
+
+
+# [1.13.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.12.1...@loopback/context@1.13.0) (2019-05-09)
+
+
+### Features
+
+* **context:** add support for method interceptors ([293188d](https://github.com/strongloop/loopback-next/commit/293188d))
+
+
+
+
+
+## [1.12.1](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.12.0...@loopback/context@1.12.1) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/context
+
+
+
+
+
 # [1.12.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.11.0...@loopback/context@1.12.0) (2019-04-20)
 
 

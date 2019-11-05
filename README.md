@@ -1,10 +1,9 @@
-# loopback-next
+<img src="https://raw.githubusercontent.com/strongloop/loopback.io/gh-pages/images/branding/logo/blue/loopback-sm.png" alt="LoopBack4 logo" width="400"/>
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/strongloop/loopback)
-[![Travis Build Status](https://travis-ci.org/strongloop/loopback-next.svg?branch=master)](https://travis-ci.org/strongloop/loopback-next)
+[![Travis Build Status](https://travis-ci.com/strongloop/loopback-next.svg?branch=master)](https://travis-ci.com/strongloop/loopback-next)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/q8vp7wrdn2ak6801/branch/master?svg=true)](https://ci.appveyor.com/project/strongloop/loopback-next/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/strongloop/loopback-next/badge.svg?branch=master)](https://coveralls.io/github/strongloop/loopback-next?branch=master)
-[![Greenkeeper badge](https://badges.greenkeeper.io/strongloop/loopback-next.svg)](https://greenkeeper.io/)
 
 LoopBack makes it easy to build modern applications that require complex
 integrations.
@@ -31,13 +30,13 @@ Check the
 for all the API usages in each package.
 
 [LoopBack 3](https://loopback.io/doc/en/lb3/) became active LTS version, and
-[LoopBack 2](https://loopback.io/doc/en/lb2/) became maintenance LTS version.
+[LoopBack 2](https://loopback.io/doc/en/lb2/) has reached end-of-life.
 
-| Version    | Status          | Published | EOL                  |
-| ---------- | --------------- | --------- | -------------------- |
-| LoopBack 4 | Current         | Oct 2018  | Apr 2021 _(minimum)_ |
-| Loopback 3 | Active LTS      | Dec 2016  | Dec 2020             |
-| Loopback 2 | Maintenance LTS | Jul 2014  | Apr 2019             |
+| Version    | Status      | Published | EOL                  |
+| ---------- | ----------- | --------- | -------------------- |
+| LoopBack 4 | Current     | Oct 2018  | Apr 2021 _(minimum)_ |
+| LoopBack 3 | Active LTS  | Dec 2016  | Dec 2020             |
+| LoopBack 2 | End-of-Life | Jul 2014  | Apr 2019             |
 
 Please refer to our
 [Long Term Support Policy](https://loopback.io/doc/en/contrib/Long-term-support.html)
@@ -88,14 +87,14 @@ You can join the team by posting a comment to
 
 ### Project Maintainers
 
-|                                                  |                                                  |                                                            |
-| :----------------------------------------------: | :----------------------------------------------: | :--------------------------------------------------------: |
-|                  Biniam Admikew                  |                    Diana Lau                     |                         Janny Hou                          |
-|    [![b-admike]](http://github.com/b-admike)     |      [![dhmlau]](http://github.com/dhmlau)       |         [![jannyhou]](http://github.com/jannyHou)          |
-|                    Hage Yaapa                    |                 Nora Abdelgadir                  |                       Mario Estrada                        |
-| [![hacksparrow]](https://github.com/hacksparrow) | [![nabdelgadir]](https://github.com/nabdelgadir) | [![marioestradarosa]](https://github.com/marioestradarosa) |
-|                   Hugo Da Roit                   |                 Dominique Emond                  |                                                            |
-|        [![yaty]](https://github.com/yaty)        |     [![emonddr]](https://github.com/emonddr)     |                                                            |
+|                                                  |                                                            |                                                  |
+| :----------------------------------------------: | :--------------------------------------------------------: | :----------------------------------------------: |
+|                    Diana Lau                     |                         Janny Hou                          |                    Hage Yaapa                    |
+|      [![dhmlau]](http://github.com/dhmlau)       |         [![jannyhou]](http://github.com/jannyHou)          | [![hacksparrow]](https://github.com/hacksparrow) |
+|                 Nora Abdelgadir                  |                       Mario Estrada                        |                   Hugo Da Roit                   |
+| [![nabdelgadir]](https://github.com/nabdelgadir) | [![marioestradarosa]](https://github.com/marioestradarosa) |        [![yaty]](https://github.com/yaty)        |
+|                 Dominique Emond                  |                         Agnes Lin                          |                 Deepak Rajamohan                 |
+|     [![emonddr]](https://github.com/emonddr)     |         [![agnes512]](https://github.com/agnes512)         | [![deepakrkris]](https://github.com/deepakrkris) |
 
 See
 [all contributors](https://github.com/strongloop/loopback-next/graphs/contributors).
@@ -107,7 +106,6 @@ See
 [raymondfeng]: https://avatars0.githubusercontent.com/u/540892?v=3&s=60
 [bajtos]: https://avatars2.githubusercontent.com/u/1140553?v=3&s=60
 [ritch]: https://avatars2.githubusercontent.com/u/462228?v=3&s=60
-[b-admike]: https://avatars0.githubusercontent.com/u/13950637?v=3&s=60
 [dhmlau]: https://avatars2.githubusercontent.com/u/25489897?v=3&s=60
 [jannyhou]: https://avatars2.githubusercontent.com/u/12554153?v=3&s=60
 [hacksparrow]: https://avatars2.githubusercontent.com/u/950112?v=3&s=60
@@ -115,3 +113,5 @@ See
 [marioestradarosa]: https://avatars2.githubusercontent.com/u/4633823?v=3&s=60
 [yaty]: https://avatars3.githubusercontent.com/u/11981803?v=3&s=60
 [emonddr]: https://avatars0.githubusercontent.com/u/6864736??v=3&s=60
+[agnes512]: https://avatars3.githubusercontent.com/u/50331796?v=3&s=60
+[deepakrkris]: https://avatars0.githubusercontent.com/u/7688315?v=3&s=60

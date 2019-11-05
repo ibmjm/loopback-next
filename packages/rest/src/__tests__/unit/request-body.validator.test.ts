@@ -3,15 +3,14 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {expect} from '@loopback/testlab';
-import {validateRequestBody} from '../../validation/request-body.validator';
-import {RestHttpErrors} from '../../';
-import {aBodySpec} from '../helpers';
 import {
   ReferenceObject,
   SchemaObject,
   SchemasObject,
-} from '@loopback/openapi-v3-types';
+} from '@loopback/openapi-v3';
+import {expect} from '@loopback/testlab';
+import {RestHttpErrors, validateRequestBody} from '../../';
+import {aBodySpec} from '../helpers';
 
 const INVALID_MSG = RestHttpErrors.INVALID_REQUEST_BODY_MESSAGE;
 
@@ -57,6 +56,44 @@ describe('validateRequestBody', () => {
       {value: {title: 'work'}, schema: TODO_SCHEMA},
       aBodySpec(TODO_SCHEMA),
     );
+  });
+
+  // Test for https://github.com/strongloop/loopback-next/issues/3234
+  it('honors options for AJV validator caching', () => {
+    // 1. Trigger a validation with `{coerceTypes: false}`
+    validateRequestBody(
+      {
+        value: {city: 'San Jose', unit: 123, isOwner: true},
+        schema: ADDRESS_SCHEMA,
+      },
+      aBodySpec(ADDRESS_SCHEMA),
+      {},
+      {coerceTypes: false},
+    );
+
+    // 2. Trigger a validation with `{coerceTypes: true}`
+    validateRequestBody(
+      {
+        value: {city: 'San Jose', unit: '123', isOwner: 'true'},
+        schema: ADDRESS_SCHEMA,
+      },
+      aBodySpec(ADDRESS_SCHEMA),
+      {},
+      {coerceTypes: true},
+    );
+
+    // 3. Trigger a validation with `{coerceTypes: false}` with invalid data
+    expect(() =>
+      validateRequestBody(
+        {
+          value: {city: 'San Jose', unit: '123', isOwner: true},
+          schema: ADDRESS_SCHEMA,
+        },
+        aBodySpec(ADDRESS_SCHEMA),
+        {},
+        {coerceTypes: false},
+      ),
+    ).to.throw(/The request body is invalid/);
   });
 
   it('rejects data missing a required property', () => {

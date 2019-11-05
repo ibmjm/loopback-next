@@ -14,9 +14,11 @@ if (require.main === module) {
       port: +process.env.PORT || 3000,
       host: process.env.HOST || 'localhost',
       openApiSpec: {
-        // useful when used with OASGraph to locate your application
+        // useful when used with OpenAPI-to-GraphQL to locate your application
         setServersFromRequest: true,
       },
+      // Use the LB4 application as a route. It should not be listening.
+      listenOnStart: false,
     },
   };
   application.main(config).catch(err => {

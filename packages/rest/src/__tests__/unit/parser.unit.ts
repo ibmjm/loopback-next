@@ -9,7 +9,7 @@ import {
   ParameterObject,
   RequestBodyObject,
   SchemaObject,
-} from '@loopback/openapi-v3-types';
+} from '@loopback/openapi-v3';
 import {
   expect,
   ShotRequestOptions,
@@ -67,6 +67,35 @@ describe('operationArgsParser', () => {
     const args = await parseOperationArgs(req, route, requestBodyParser);
 
     expect(args).to.eql([{key: 'value'}]);
+  });
+
+  it('parses nullable body parameter', async () => {
+    const req = givenRequest({
+      url: '/',
+      payload: {key: null},
+    });
+
+    const spec = givenOperationWithRequestBody({
+      description: 'data',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              key: {
+                type: 'string',
+                nullable: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    const route = givenResolvedRoute(spec);
+
+    const args = await parseOperationArgs(req, route, requestBodyParser);
+
+    expect(args).to.eql([{key: null}]);
   });
 
   it('parses body parameter for urlencoded', async () => {

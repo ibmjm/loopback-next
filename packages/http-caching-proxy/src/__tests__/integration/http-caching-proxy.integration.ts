@@ -16,7 +16,6 @@ import {HttpCachingProxy, ProxyOptions} from '../../http-caching-proxy';
 
 const CACHE_DIR = path.join(__dirname, '.cache');
 
-// tslint:disable:await-promise
 const rimraf = util.promisify(rimrafCb);
 
 describe('HttpCachingProxy', () => {
@@ -27,7 +26,7 @@ describe('HttpCachingProxy', () => {
   let proxy: HttpCachingProxy;
   after(stopProxy);
 
-  beforeEach('clean cache dir', async () => await rimraf(CACHE_DIR));
+  beforeEach('clean cache dir', async () => rimraf(CACHE_DIR));
 
   it('provides "url" property when running', async () => {
     await givenRunningProxy();
@@ -40,8 +39,8 @@ describe('HttpCachingProxy', () => {
   });
 
   it('proxies HTTP requests', async function() {
-    // Increase the timeout to accomodate slow network connections
-    // tslint:disable-next-line:no-invalid-this
+    // Increase the timeout to accommodate slow network connections
+    // eslint-disable-next-line no-invalid-this
     this.timeout(30000);
 
     await givenRunningProxy();
@@ -55,9 +54,41 @@ describe('HttpCachingProxy', () => {
     expect(result.body).to.containEql('example');
   });
 
+  it('reports error for HTTP requests', async function() {
+    // Increase the timeout to accommodate slow network connections
+    // eslint-disable-next-line no-invalid-this
+    this.timeout(30000);
+
+    await givenRunningProxy({logError: false});
+    await expect(
+      makeRequest({
+        uri: 'http://does-not-exist.example.com',
+        proxy: proxy.url,
+        resolveWithFullResponse: true,
+      }),
+    ).to.be.rejectedWith(
+      // The error can be
+      // '502 - "Error: getaddrinfo EAI_AGAIN does-not-exist.example.com:80"'
+      // '502 - "Error: getaddrinfo ENOTFOUND does-not-exist.example.com'
+      /502 - "Error\: getaddrinfo/,
+    );
+  });
+
+  it('reports timeout error for HTTP requests', async function() {
+    await givenRunningProxy({logError: false, timeout: 1});
+    await expect(
+      makeRequest({
+        uri:
+          'http://www.mocky.io/v2/5dade5e72d0000a542e4bd9c?mocky-delay=1000ms',
+        proxy: proxy.url,
+        resolveWithFullResponse: true,
+      }),
+    ).to.be.rejectedWith(/502 - "Error: ETIMEDOUT"/);
+  });
+
   it('proxies HTTPs requests (no tunneling)', async function() {
-    // Increase the timeout to accomodate slow network connections
-    // tslint:disable-next-line:no-invalid-this
+    // Increase the timeout to accommodate slow network connections
+    // eslint-disable-next-line no-invalid-this
     this.timeout(30000);
 
     await givenRunningProxy();
@@ -166,8 +197,7 @@ describe('HttpCachingProxy', () => {
   });
 
   it('handles the case where backend service is not running', async () => {
-    await givenRunningProxy();
-    proxy.logError = (request, error) => {}; // no-op
+    await givenRunningProxy({logError: false});
 
     await expect(
       makeRequest({uri: 'http://127.0.0.1:1/', proxy: proxy.url}),
@@ -217,6 +247,7 @@ describe('HttpCachingProxy', () => {
     if (!stubServer) return;
     stubServer.close();
     await pEvent(stubServer, 'close');
+    // eslint-disable-next-line require-atomic-updates
     stubServer = undefined;
   }
 

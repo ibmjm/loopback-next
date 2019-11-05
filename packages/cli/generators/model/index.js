@@ -6,7 +6,6 @@
 'use strict';
 
 const modelDiscoverer = require('../../lib/model-discoverer');
-const fs = require('fs');
 
 const ArtifactGenerator = require('../../lib/artifact-generator');
 const debug = require('../../lib/debug')('model-generator');
@@ -14,6 +13,8 @@ const inspect = require('util').inspect;
 const utils = require('../../lib/utils');
 const chalk = require('chalk');
 const path = require('path');
+
+const {createPropertyTemplateData} = require('./property-definition');
 
 const PROMPT_BASE_MODEL_CLASS = 'Please select the model base class';
 const ERROR_NO_MODELS_FOUND = 'Model was not found in';
@@ -71,7 +72,6 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
 
     this.artifactInfo.properties = {};
     this.artifactInfo.modelSettings = {};
-    this.propCounter = 0;
 
     this.artifactInfo.modelDir = path.resolve(
       this.artifactInfo.rootDir,
@@ -151,8 +151,7 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
   async discoverModelPropertiesWithDatasource() {
     if (this.shouldExit()) return false;
     if (!this.options.dataSource) return;
-    if (!this.artifactInfo.dataSource) {
-    }
+    if (!this.artifactInfo.dataSource) return;
 
     const schemaDef = await modelDiscoverer.discoverSingleModel(
       this.artifactInfo.dataSource,
@@ -186,6 +185,8 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
     if (this.shouldExit()) return;
     await super.promptArtifactName();
     this.artifactInfo.className = utils.toClassName(this.artifactInfo.name);
+    // Prompt warning msg for the name
+    super.promptWarningMsgForName();
   }
 
   // Ask for Model base class
@@ -296,6 +297,12 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
         if (this.artifactInfo.allowAdditionalProperties) {
           Object.assign(this.artifactInfo.modelSettings, {strict: false});
         }
+        // inform user what model/file names will be created
+        super.promptClassFileName(
+          'model',
+          'models',
+          this.artifactInfo.className,
+        );
 
         this.log(
           `Let's add a property to ${chalk.yellow(
@@ -316,13 +323,13 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
   isValidBaseClass(availableModelBaseClasses, classname, isClassNameNullable) {
     if (!classname && !isClassNameNullable) return false;
 
-    for (var i in availableModelBaseClasses) {
-      var baseClass = '';
+    for (const i in availableModelBaseClasses) {
+      let baseClass = '';
       if (typeof availableModelBaseClasses[i] == 'object')
         baseClass = availableModelBaseClasses[i].value;
       else baseClass = availableModelBaseClasses[i];
 
-      if (classname == baseClass) {
+      if (classname === baseClass) {
         return true;
       }
     }
@@ -400,16 +407,27 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
           },
         },
         {
+          name: 'generated',
+          message: `Is ${chalk.yellow(this.propName)} generated automatically?`,
+          type: 'confirm',
+          default: true,
+          when: answers => answers.id,
+        },
+        {
           name: 'required',
           message: 'Is it required?:',
           type: 'confirm',
           default: false,
+          when: answers => !answers.generated,
         },
         {
           name: 'default',
           message: `Default value ${chalk.yellow('[leave blank for none]')}:`,
           when: answers => {
-            return ![null, 'buffer', 'any'].includes(answers.type);
+            return (
+              ![null, 'buffer', 'any'].includes(answers.type) &&
+              !answers.generated
+            );
           },
         },
       ];
@@ -426,6 +444,8 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
       Object.assign(this.artifactInfo.properties[this.propName], answers);
 
       // We prompt for `id` only once per model using idFieldSet flag.
+      // and 'generated' flag makes sure id is defined, especially for database like MySQL
+      // Skipped the test for `generated` for now.
       if (answers.id) {
         this.idFieldSet = true;
       }
@@ -462,56 +482,19 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
       this.artifactInfo.modelBaseClass,
     );
 
-    // Set up types for Templating
-    const TS_TYPES = ['string', 'number', 'object', 'boolean', 'any'];
-    const NON_TS_TYPES = ['geopoint', 'date'];
-    Object.values(this.artifactInfo.properties).forEach(val => {
-      // Default tsType is the type property
-      val.tsType = val.type;
+    const propDefs = this.artifactInfo.properties;
+    this.artifactInfo.properties = {};
+    for (const key in propDefs) {
+      this.artifactInfo.properties[key] = createPropertyTemplateData(
+        propDefs[key],
+      );
+    }
 
-      // Override tsType based on certain type values
-      if (val.type === 'array') {
-        if (TS_TYPES.includes(val.itemType)) {
-          val.tsType = `${val.itemType}[]`;
-        } else if (val.type === 'buffer') {
-          val.tsType = 'Buffer[]';
-        } else {
-          val.tsType = 'string[]';
-        }
-      } else if (val.type === 'buffer') {
-        val.tsType = 'Buffer';
-      }
-
-      if (NON_TS_TYPES.includes(val.tsType)) {
-        val.tsType = 'string';
-      }
-
-      if (
-        val.defaultValue &&
-        NON_TS_TYPES.concat(['string', 'any']).includes(val.type)
-      ) {
-        val.defaultValue = `'${val.defaultValue}'`;
-      }
-
-      // Convert Type to include '' for template
-      val.type = `'${val.type}'`;
-      if (val.itemType) {
-        val.itemType = `'${val.itemType}'`;
-      }
-
-      // If required is false, we can delete it as that's the default assumption
-      // for this field if not present. This helps to avoid polluting the
-      // decorator with redundant properties.
-      if (!val.required) {
-        delete val.required;
-      }
-
-      // We only care about marking the `id` field as `id` and not fields that
-      // are not the id so if this is false we delete it similar to `required`.
-      if (!val.id) {
-        delete val.id;
-      }
-    });
+    if (this.artifactInfo.modelSettings) {
+      this.artifactInfo.modelSettings = utils.stringifyModelSettings(
+        this.artifactInfo.modelSettings,
+      );
+    }
 
     this.copyTemplatedFiles(
       this.templatePath(MODEL_TEMPLATE_PATH),

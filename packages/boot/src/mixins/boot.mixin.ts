@@ -5,15 +5,15 @@
 
 import {
   Binding,
+  BindingScope,
   Constructor,
   Context,
   createBindingFromClass,
-  BindingScope,
 } from '@loopback/context';
 import {BootComponent} from '../boot.component';
 import {Bootstrapper} from '../bootstrapper';
-import {Bootable, Booter, BootOptions} from '../interfaces';
-import {BootBindings} from '../keys';
+import {BootBindings, BootTags} from '../keys';
+import {Bootable, Booter, BootOptions} from '../types';
 
 // Binding is re-exported as Binding / Booter types are needed when consuming
 // BootMixin and this allows a user to import them from the same package (UX!)
@@ -40,13 +40,13 @@ export {Binding};
  * Example (class MyApp extends BootMixin(RepositoryMixin(Application))) {};
  ********************* END OF NOTE ********************
  */
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function BootMixin<T extends Constructor<any>>(superClass: T) {
   return class extends superClass implements Bootable {
     projectRoot: string;
     bootOptions?: BootOptions;
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
       super(...args);
       this.component(BootComponent);
@@ -77,8 +77,9 @@ export function BootMixin<T extends Constructor<any>>(superClass: T) {
      * Given a N number of Booter Classes, this method binds them using the
      * prefix and tag expected by the Bootstrapper.
      *
-     * @param booterCls Booter classes to bind to the Application
+     * @param booterCls - Booter classes to bind to the Application
      *
+     * @example
      * ```ts
      * app.booters(MyBooter, MyOtherBooter)
      * ```
@@ -92,8 +93,9 @@ export function BootMixin<T extends Constructor<any>>(superClass: T) {
     /**
      * Override to ensure any Booter's on a Component are also mounted.
      *
-     * @param component The component to add.
+     * @param component - The component to add.
      *
+     * @example
      * ```ts
      *
      * export class ProductComponent {
@@ -117,7 +119,7 @@ export function BootMixin<T extends Constructor<any>>(superClass: T) {
      * booters. This function is intended to be used internally
      * by component()
      *
-     * @param component The component to mount booters of
+     * @param component - The component to mount booters of
      */
     mountComponentBooters(component: Constructor<{}>) {
       const componentKey = `components.${component.name}`;
@@ -134,8 +136,8 @@ export function BootMixin<T extends Constructor<any>>(superClass: T) {
  * Method which binds a given Booter to a given Context with the Prefix and
  * Tags expected by the Bootstrapper
  *
- * @param ctx The Context to bind the Booter Class
- * @param booterCls Booter class to be bound
+ * @param ctx - The Context to bind the Booter Class
+ * @param booterCls - Booter class to be bound
  */
 export function _bindBooter(
   ctx: Context,
@@ -143,9 +145,19 @@ export function _bindBooter(
 ): Binding {
   const binding = createBindingFromClass(booterCls, {
     namespace: BootBindings.BOOTER_PREFIX,
-  })
-    .tag(BootBindings.BOOTER_TAG)
-    .inScope(BindingScope.SINGLETON);
+    defaultScope: BindingScope.SINGLETON,
+  }).tag(BootTags.BOOTER);
   ctx.add(binding);
+  /**
+   * Set up configuration binding as alias to `BootBindings.BOOT_OPTIONS`
+   * so that the booter can use `@config`.
+   */
+  if (binding.tagMap.artifactNamespace) {
+    ctx
+      .configure(binding.key)
+      .toAlias(
+        `${BootBindings.BOOT_OPTIONS.key}#${binding.tagMap.artifactNamespace}`,
+      );
+  }
   return binding;
 }

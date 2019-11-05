@@ -23,6 +23,8 @@ A binding typically has the following attributes:
 - value: Each binding must be configured with a type of value provider so that
   it be resolved to a constant or calculated value
 
+![Binding](imgs/binding.png)
+
 ## How to create a binding?
 
 There are a few ways to create a binding:
@@ -138,7 +140,7 @@ scopes:
 - BindingScope.SINGLETON
 
 For a complete list of descriptions, please see
-[BindingScope](http://apidocs.loopback.io/@loopback%2fdocs/context.html#BindingScope).
+[BindingScope](https://loopback.io/doc/en/lb4/apidocs.context.bindingscope.html).
 
 ```ts
 binding.inScope(BindingScope.SINGLETON);

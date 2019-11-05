@@ -6,9 +6,9 @@
 import {HttpCachingProxy} from '@loopback/http-caching-proxy';
 import {merge} from 'lodash';
 import * as path from 'path';
-import {Todo} from '../models/index';
-import {GeoPoint} from '../services/geocoder.service';
 import * as GEO_CODER_CONFIG from '../datasources/geocoder.datasource.json';
+import {Todo} from '../models/index';
+import {GeocoderService, GeoPoint} from '../services/geocoder.service';
 
 /*
  ==============================================================================
@@ -32,7 +32,7 @@ import * as GEO_CODER_CONFIG from '../datasources/geocoder.datasource.json';
 
 /**
  * Generate a complete Todo object for use with tests.
- * @param todo A partial (or complete) Todo object.
+ * @param todo - A partial (or complete) Todo object.
  */
 export function givenTodo(todo?: Partial<Todo>) {
   const data = Object.assign(
@@ -50,7 +50,6 @@ export const aLocation = {
   address: '1 New Orchard Road, Armonk, 10504',
   geopoint: <GeoPoint>{y: 41.109653, x: -73.72467},
   get geostring() {
-    // tslint:disable-next-line:no-invalid-this
     return `${this.geopoint.y},${this.geopoint.x}`;
   },
 };
@@ -68,7 +67,21 @@ export {HttpCachingProxy};
 export async function givenCachingProxy() {
   const proxy = new HttpCachingProxy({
     cachePath: path.resolve(__dirname, '.http-cache'),
+    logError: false,
+    timeout: 5000,
   });
   await proxy.start();
   return proxy;
+}
+
+export async function isGeoCoderServiceAvailable(service: GeocoderService) {
+  try {
+    await service.geocode(aLocation.address);
+    return true;
+  } catch (err) {
+    if (err.statusCode === 502) {
+      return false;
+    }
+    throw err;
+  }
 }

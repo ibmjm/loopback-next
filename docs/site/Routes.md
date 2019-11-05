@@ -60,8 +60,7 @@ be confused with `x-operation-name`, which is a string for the Controller method
 name.
 
 ```ts
-import {RestApplication} from '@loopback/rest';
-import {OpenApiSpec} from '@loopback/openapi-v3-types';
+import {OpenApiSpec, RestApplication} from '@loopback/rest';
 
 function greet(name: string) {
   return `hello ${name}`;
@@ -107,8 +106,7 @@ which is defined using `spec`. The route is then attached to a valid server
 context running underneath the application.
 
 ```ts
-import {RestApplication, Route} from '@loopback/rest';
-import {OperationObject} from '@loopback/openapi-v3-types';
+import {OperationObject, RestApplication, Route} from '@loopback/rest';
 
 const spec: OperationObject = {
   parameters: [{name: 'name', in: 'query', schema: {type: 'string'}}],
@@ -239,9 +237,8 @@ for the tutorial.
 
 Mounting an Express router on a LoopBack 4 application can be done using the
 `mountExpressRouter` function provided by both
-[`RestApplication`](http://apidocs.loopback.io/@loopback%2fdocs/rest.html#RestApplication)
-and
-[`RestServer`](http://apidocs.loopback.io/@loopback%2fdocs/rest.html#RestServer).
+[`RestApplication`](https://loopback.io/doc/en/lb4/apidocs.rest.restapplication.html)
+and [`RestServer`](https://loopback.io/doc/en/lb4/apidocs.rest.restserver.html).
 
 Example use:
 

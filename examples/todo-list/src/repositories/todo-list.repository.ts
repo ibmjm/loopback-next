@@ -7,17 +7,18 @@ import {Getter, inject} from '@loopback/core';
 import {
   DefaultCrudRepository,
   HasManyRepositoryFactory,
+  HasOneRepositoryFactory,
   juggler,
   repository,
-  HasOneRepositoryFactory,
 } from '@loopback/repository';
-import {Todo, TodoList, TodoListImage} from '../models';
-import {TodoRepository} from './todo.repository';
+import {Todo, TodoList, TodoListImage, TodoListRelations} from '../models';
 import {TodoListImageRepository} from './todo-list-image.repository';
+import {TodoRepository} from './todo.repository';
 
 export class TodoListRepository extends DefaultCrudRepository<
   TodoList,
-  typeof TodoList.prototype.id
+  typeof TodoList.prototype.id,
+  TodoListRelations
 > {
   public readonly todos: HasManyRepositoryFactory<
     Todo,
@@ -36,14 +37,20 @@ export class TodoListRepository extends DefaultCrudRepository<
     protected todoListImageRepositoryGetter: Getter<TodoListImageRepository>,
   ) {
     super(TodoList, dataSource);
+
     this.todos = this.createHasManyRepositoryFactoryFor(
       'todos',
       todoRepositoryGetter,
     );
+
+    this.registerInclusionResolver('todos', this.todos.inclusionResolver);
+
     this.image = this.createHasOneRepositoryFactoryFor(
       'image',
       todoListImageRepositoryGetter,
     );
+
+    this.registerInclusionResolver('image', this.image.inclusionResolver);
   }
 
   public findByTitle(title: string) {

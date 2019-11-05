@@ -4,16 +4,18 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {expect} from '@loopback/testlab';
+import {GeocoderDataSource} from '../../../datasources/geocoder.datasource';
 import {GeocoderService, GeocoderServiceProvider} from '../../../services';
 import {
-  HttpCachingProxy,
-  givenCachingProxy,
+  aLocation,
   getProxiedGeoCoderConfig,
+  givenCachingProxy,
+  HttpCachingProxy,
+  isGeoCoderServiceAvailable,
 } from '../../helpers';
-import {GeocoderDataSource} from '../../../datasources/geocoder.datasource';
 
 describe('GeoLookupService', function() {
-  // tslint:disable-next-line:no-invalid-this
+  // eslint-disable-next-line no-invalid-this
   this.timeout(30 * 1000);
 
   let cachingProxy: HttpCachingProxy;
@@ -23,15 +25,18 @@ describe('GeoLookupService', function() {
   let service: GeocoderService;
   before(givenGeoService);
 
-  it('resolves an address to a geo point', async () => {
-    const points = await service.geocode('1 New Orchard Road, Armonk, 10504');
+  let available = true;
+  before(async () => {
+    available = await isGeoCoderServiceAvailable(service);
+  });
 
-    expect(points).to.deepEqual([
-      {
-        y: 41.109653,
-        x: -73.72467,
-      },
-    ]);
+  it('resolves an address to a geo point', async function() {
+    // eslint-disable-next-line no-invalid-this
+    if (!available) return this.skip();
+
+    const points = await service.geocode(aLocation.address);
+
+    expect(points).to.deepEqual([aLocation.geopoint]);
   });
 
   async function givenGeoService() {

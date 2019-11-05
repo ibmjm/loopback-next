@@ -4,7 +4,6 @@
 // License text available at https://opensource.org/licenses/MIT
 
 'use strict';
-const _ = require('lodash');
 const ArtifactGenerator = require('../../lib/artifact-generator');
 const debug = require('../../lib/debug')('observer-generator');
 const inspect = require('util').inspect;
@@ -107,7 +106,7 @@ module.exports = class ObserverGenerator extends ArtifactGenerator {
     // Setting up data for templates
     this.artifactInfo.className =
       utils.toClassName(this.artifactInfo.name) + 'Observer';
-    this.artifactInfo.fileName = utils.kebabCase(this.artifactInfo.name);
+    this.artifactInfo.fileName = utils.toFileName(this.artifactInfo.name);
 
     Object.assign(this.artifactInfo, {
       outFile: utils.getObserverFileName(this.artifactInfo.name),

@@ -3,9 +3,9 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Binding, BindingAddress, Constructor} from '@loopback/context';
+import {Binding, BindingAddress, Constructor, Context} from '@loopback/context';
 import {Application, ApplicationConfig, Server} from '@loopback/core';
-import {OpenApiSpec, OperationObject} from '@loopback/openapi-v3-types';
+import {OpenApiSpec, OperationObject} from '@loopback/openapi-v3';
 import {PathParams} from 'express-serve-static-core';
 import {ServeStaticOptions} from 'serve-static';
 import {format} from 'util';
@@ -61,15 +61,27 @@ export class RestApplication extends Application implements HttpServerLike {
    * server.listen(3000);
    * ```
    *
-   * @param req The request.
-   * @param res The response.
+   * @param req - The request.
+   * @param res - The response.
    */
   get requestHandler(): HttpRequestListener {
     return this.restServer.requestHandler;
   }
 
-  constructor(config: ApplicationConfig = {}) {
-    super(config);
+  /**
+   * Create a REST application with the given parent context
+   * @param parent - Parent context
+   */
+  constructor(parent: Context);
+  /**
+   * Create a REST application with the given configuration and parent context
+   * @param config - Application configuration
+   * @param parent - Parent context
+   */
+  constructor(config?: ApplicationConfig, parent?: Context);
+
+  constructor(configOrParent?: ApplicationConfig | Context, parent?: Context) {
+    super(configOrParent, parent);
     this.component(RestComponent);
   }
 
@@ -91,11 +103,11 @@ export class RestApplication extends Application implements HttpServerLike {
   /**
    * Mount static assets to the REST server.
    * See https://expressjs.com/en/4x/api.html#express.static
-   * @param path The path(s) to serve the asset.
+   * @param path - The path(s) to serve the asset.
    * See examples at https://expressjs.com/en/4x/api.html#path-examples
    * To avoid performance penalty, `/` is not allowed for now.
-   * @param rootDir The root directory from which to serve static assets
-   * @param options Options for serve-static
+   * @param rootDir - The root directory from which to serve static assets
+   * @param options - Options for serve-static
    */
   static(path: PathParams, rootDir: string, options?: ServeStaticOptions) {
     this.restServer.static(path, rootDir, options);
@@ -103,8 +115,8 @@ export class RestApplication extends Application implements HttpServerLike {
 
   /**
    * Bind a body parser to the server context
-   * @param parserClass Body parser class
-   * @param address Optional binding address
+   * @param parserClass - Body parser class
+   * @param address - Optional binding address
    */
   bodyParser(
     bodyParserClass: Constructor<BodyParser>,
@@ -115,15 +127,16 @@ export class RestApplication extends Application implements HttpServerLike {
 
   /**
    * Configure the `basePath` for the rest server
-   * @param path Base path
+   * @param path - Base path
    */
-  basePath(path: string = '') {
+  basePath(path = '') {
     this.restServer.basePath(path);
   }
 
   /**
    * Register a new Controller-based route.
    *
+   * @example
    * ```ts
    * class MyController {
    *   greet(name: string) {
@@ -133,12 +146,12 @@ export class RestApplication extends Application implements HttpServerLike {
    * app.route('get', '/greet', operationSpec, MyController, 'greet');
    * ```
    *
-   * @param verb HTTP verb of the endpoint
-   * @param path URL path of the endpoint
-   * @param spec The OpenAPI spec describing the endpoint (operation)
-   * @param controllerCtor Controller constructor
-   * @param controllerFactory A factory function to create controller instance
-   * @param methodName The name of the controller method
+   * @param verb - HTTP verb of the endpoint
+   * @param path - URL path of the endpoint
+   * @param spec - The OpenAPI spec describing the endpoint (operation)
+   * @param controllerCtor - Controller constructor
+   * @param controllerFactory - A factory function to create controller instance
+   * @param methodName - The name of the controller method
    */
   route<T>(
     verb: string,
@@ -152,6 +165,7 @@ export class RestApplication extends Application implements HttpServerLike {
   /**
    * Register a new route invoking a handler function.
    *
+   * @example
    * ```ts
    * function greet(name: string) {
    *  return `hello ${name}`;
@@ -159,10 +173,10 @@ export class RestApplication extends Application implements HttpServerLike {
    * app.route('get', '/', operationSpec, greet);
    * ```
    *
-   * @param verb HTTP verb of the endpoint
-   * @param path URL path of the endpoint
-   * @param spec The OpenAPI spec describing the endpoint (operation)
-   * @param handler The function to invoke with the request parameters
+   * @param verb - HTTP verb of the endpoint
+   * @param path - URL path of the endpoint
+   * @param spec - The OpenAPI spec describing the endpoint (operation)
+   * @param handler - The function to invoke with the request parameters
    * described in the spec.
    */
   route(
@@ -175,6 +189,7 @@ export class RestApplication extends Application implements HttpServerLike {
   /**
    * Register a new route.
    *
+   * @example
    * ```ts
    * function greet(name: string) {
    *  return `hello ${name}`;
@@ -183,13 +198,14 @@ export class RestApplication extends Application implements HttpServerLike {
    * app.route(route);
    * ```
    *
-   * @param route The route to add.
+   * @param route - The route to add.
    */
   route(route: RouteEntry): Binding;
 
   /**
    * Register a new route.
    *
+   * @example
    * ```ts
    * function greet(name: string) {
    *  return `hello ${name}`;
@@ -237,15 +253,16 @@ export class RestApplication extends Application implements HttpServerLike {
   /**
    * Register a route redirecting callers to a different URL.
    *
+   * @example
    * ```ts
    * app.redirect('/explorer', '/explorer/');
    * ```
    *
-   * @param fromPath URL path of the redirect endpoint
-   * @param toPathOrUrl Location (URL path or full URL) where to redirect to.
+   * @param fromPath - URL path of the redirect endpoint
+   * @param toPathOrUrl - Location (URL path or full URL) where to redirect to.
    * If your server is configured with a custom `basePath`, then the base path
    * is prepended to the target location.
-   * @param statusCode HTTP status code to respond with,
+   * @param statusCode - HTTP status code to respond with,
    *   defaults to 303 (See Other).
    */
   redirect(
@@ -264,8 +281,8 @@ export class RestApplication extends Application implements HttpServerLike {
    * Note that this will override any routes defined via decorators at the
    * controller level (this function takes precedent).
    *
-   * @param {OpenApiSpec} spec The OpenAPI specification, as an object.
-   * @returns {Binding}
+   * @param spec - The OpenAPI specification, as an object.
+   * @returns Binding for the api spec
    */
   api(spec: OpenApiSpec): Binding {
     return this.bind(RestBindings.API_SPEC).to(spec);
@@ -275,9 +292,9 @@ export class RestApplication extends Application implements HttpServerLike {
    * Mount an Express router to expose additional REST endpoints handled
    * via legacy Express-based stack.
    *
-   * @param basePath Path where to mount the router at, e.g. `/` or `/api`.
-   * @param router The Express router to handle the requests.
-   * @param spec A partial OpenAPI spec describing endpoints provided by the
+   * @param basePath - Path where to mount the router at, e.g. `/` or `/api`.
+   * @param router - The Express router to handle the requests.
+   * @param spec - A partial OpenAPI spec describing endpoints provided by the
    * router. LoopBack will prepend `basePath` to all endpoints automatically.
    * This argument is optional. You can leave it out if you don't want to
    * document the routes.

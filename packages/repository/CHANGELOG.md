@@ -3,6 +3,266 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.3](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.15.2...@loopback/repository@1.15.3) (2019-10-24)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+## [1.15.2](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.15.1...@loopback/repository@1.15.2) (2019-10-07)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+## [1.15.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.15.0...@loopback/repository@1.15.1) (2019-09-28)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+# [1.15.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.14.0...@loopback/repository@1.15.0) (2019-09-27)
+
+
+### Bug Fixes
+
+* **repository:** allow model classes with recursive type references ([0094ded](https://github.com/strongloop/loopback-next/commit/0094ded)), closes [/github.com/strongloop/loopback-next/issues/3671#issuecomment-529376105](https://github.com//github.com/strongloop/loopback-next/issues/3671/issues/issuecomment-529376105)
+
+
+### Features
+
+* **repository:** implement inclusion resolver for belongsTo relation ([fc3d5b6](https://github.com/strongloop/loopback-next/commit/fc3d5b6))
+* **repository:** implement inclusion resolver for hasOne relation ([8dfdf58](https://github.com/strongloop/loopback-next/commit/8dfdf58))
+* **repository:** implement inclusionResolver for hasMany ([4cf9a70](https://github.com/strongloop/loopback-next/commit/4cf9a70))
+
+
+
+
+
+# [1.14.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.13.1...@loopback/repository@1.14.0) (2019-09-17)
+
+
+### Features
+
+* **repository:** add keyFrom to resolved relation metadata ([fb4c5c8](https://github.com/strongloop/loopback-next/commit/fb4c5c8))
+
+
+
+
+
+## [1.13.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.13.0...@loopback/repository@1.13.1) (2019-09-06)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+# [1.13.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.12.0...@loopback/repository@1.13.0) (2019-09-03)
+
+
+### Features
+
+* **repository:** add inclusionResolvers to DefaultCrudRepository ([642c4b6](https://github.com/strongloop/loopback-next/commit/642c4b6))
+
+
+
+
+
+# [1.12.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.11.1...@loopback/repository@1.12.0) (2019-08-19)
+
+
+### Features
+
+* **repository:** add InclusionResolver type and includeRelatedModels helper function ([c9c39c9](https://github.com/strongloop/loopback-next/commit/c9c39c9))
+
+
+
+
+
+## [1.11.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.11.0...@loopback/repository@1.11.1) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+# [1.11.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.10.1...@loopback/repository@1.11.0) (2019-08-15)
+
+
+### Bug Fixes
+
+* fixup findByForeignKeys ([e26e7b7](https://github.com/strongloop/loopback-next/commit/e26e7b7))
+
+
+### Features
+
+* **repository:** add function findByForeignKeys ([f5eaf1d](https://github.com/strongloop/loopback-next/commit/f5eaf1d))
+* **repository:** expose beginTransaction() API ([0471315](https://github.com/strongloop/loopback-next/commit/0471315))
+
+
+
+
+
+## [1.10.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.10.0...@loopback/repository@1.10.1) (2019-07-31)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+# [1.10.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.9.0...@loopback/repository@1.10.0) (2019-07-26)
+
+
+### Features
+
+* **repository:** add hidden properties in model ([e669913](https://github.com/strongloop/loopback-next/commit/e669913))
+
+
+
+
+
+# [1.9.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.8.2...@loopback/repository@1.9.0) (2019-07-17)
+
+
+### Bug Fixes
+
+* **repository:** make sure foreign key property in keyTo exists in target model ([ce75385](https://github.com/strongloop/loopback-next/commit/ce75385))
+
+
+### Features
+
+* **repository:** add static method Entity.getIdProperties() ([be4bf31](https://github.com/strongloop/loopback-next/commit/be4bf31))
+
+
+
+
+
+## [1.8.2](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.8.1...@loopback/repository@1.8.2) (2019-06-28)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+## [1.8.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.8.0...@loopback/repository@1.8.1) (2019-06-21)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+# [1.8.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.7.0...@loopback/repository@1.8.0) (2019-06-20)
+
+
+### Features
+
+* **repository:** include navigation properties in JSON ([008c8b5](https://github.com/strongloop/loopback-next/commit/008c8b5))
+
+
+
+
+
+# [1.7.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.6.1...@loopback/repository@1.7.0) (2019-06-17)
+
+
+### Features
+
+* **repository-json-schema:** enhance getJsonSchema to describe navigational properties ([7801f59](https://github.com/strongloop/loopback-next/commit/7801f59)), closes [#2630](https://github.com/strongloop/loopback-next/issues/2630)
+
+
+
+
+
+## [1.6.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.6.0...@loopback/repository@1.6.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+# [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.8...@loopback/repository@1.6.0) (2019-06-03)
+
+
+### Features
+
+* add navigational properties to find* methods ([1f0aa0b](https://github.com/strongloop/loopback-next/commit/1f0aa0b))
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.5.8](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.7...@loopback/repository@1.5.8) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+## [1.5.7](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.6...@loopback/repository@1.5.7) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+## [1.5.6](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.5...@loopback/repository@1.5.6) (2019-05-23)
+
+
+### Bug Fixes
+
+* **repository:** always copy property definition during juggler model build ([#2912](https://github.com/strongloop/loopback-next/issues/2912)) ([f6cae52](https://github.com/strongloop/loopback-next/commit/f6cae52))
+
+
+
+
+
+## [1.5.5](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.4...@loopback/repository@1.5.5) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+## [1.5.4](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.3...@loopback/repository@1.5.4) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+## [1.5.3](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.2...@loopback/repository@1.5.3) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
+## [1.5.2](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.1...@loopback/repository@1.5.2) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/repository
+
+
+
+
+
 ## [1.5.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository@1.5.0...@loopback/repository@1.5.1) (2019-04-26)
 
 **Note:** Version bump only for package @loopback/repository

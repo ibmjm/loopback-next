@@ -6,13 +6,22 @@
 import {BindingScope, Constructor, Context, inject} from '@loopback/context';
 import {Application, CoreBindings} from '@loopback/core';
 import {anOpenApiSpec, anOperationSpec} from '@loopback/openapi-spec-builder';
-import {api, get, param, post, requestBody} from '@loopback/openapi-v3';
 import {
+  api,
+  get,
   OperationObject,
+  param,
   ParameterObject,
+  post,
+  requestBody,
   ResponseObject,
-} from '@loopback/openapi-v3-types';
-import {Client, createClientForHandler, expect} from '@loopback/testlab';
+} from '@loopback/openapi-v3';
+import {
+  Client,
+  createClientForHandler,
+  createUnexpectedHttpErrorLogger,
+  expect,
+} from '@loopback/testlab';
 import {
   ControllerClass,
   ControllerInstance,
@@ -28,7 +37,6 @@ import {
   RestServer,
   SequenceActions,
 } from '../../..';
-import {createUnexpectedHttpErrorLogger} from '../../helpers';
 
 /* # Feature: Routing
  * - In order to build REST APIs
@@ -754,7 +762,7 @@ describe('Routing', () => {
       const server = await app.getServer(RestServer);
       const handler = await server.get(RestBindings.HANDLER);
       // Use a hack to verify the bound router is used by the handler
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((handler as any)._routes._router).to.be.instanceof(RegExpRouter);
     });
 
@@ -851,7 +859,7 @@ describe('Routing', () => {
   }
 
   async function givenAServer(app: Application) {
-    return await app.getServer(RestServer);
+    return app.getServer(RestServer);
   }
 
   function givenControllerInApp(

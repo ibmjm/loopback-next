@@ -4,15 +4,15 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {
+  BindingScope,
   Constructor,
   Context,
   instantiateClass,
   invokeMethod,
   ValueOrPromise,
-  BindingScope,
 } from '@loopback/context';
 import {CoreBindings} from '@loopback/core';
-import {OperationObject} from '@loopback/openapi-v3-types';
+import {OperationObject} from '@loopback/openapi-v3';
 import * as HttpErrors from 'http-errors';
 import {OperationArgs, OperationRetval} from '../types';
 import {BaseRoute} from './base-route';
@@ -20,7 +20,7 @@ import {BaseRoute} from './base-route';
 /*
  * A controller instance with open properties/methods
  */
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ControllerInstance = {[name: string]: any} & object;
 
 /**
@@ -47,12 +47,12 @@ export class ControllerRoute<T> extends BaseRoute {
 
   /**
    * Construct a controller based route
-   * @param verb http verb
-   * @param path http request path
-   * @param spec OpenAPI operation spec
-   * @param controllerCtor Controller class
-   * @param controllerFactory A factory function to create a controller instance
-   * @param methodName Controller method name, default to `x-operation-name`
+   * @param verb - http verb
+   * @param path - http request path
+   * @param spec - OpenAPI operation spec
+   * @param controllerCtor - Controller class
+   * @param controllerFactory - A factory function to create a controller instance
+   * @param methodName - Controller method name, default to `x-operation-name`
    */
   constructor(
     verb: string,
@@ -136,18 +136,13 @@ export class ControllerRoute<T> extends BaseRoute {
       );
     }
     // Invoke the method with dependency injection
-    return await invokeMethod(
-      controller,
-      this._methodName,
-      requestContext,
-      args,
-    );
+    return invokeMethod(controller, this._methodName, requestContext, args);
   }
 }
 
 /**
  * Create a controller factory function for a given binding key
- * @param key Binding key
+ * @param key - Binding key
  */
 export function createControllerFactoryForBinding<T>(
   key: string,
@@ -157,7 +152,7 @@ export function createControllerFactoryForBinding<T>(
 
 /**
  * Create a controller factory function for a given class
- * @param controllerCtor Controller class
+ * @param controllerCtor - Controller class
  */
 export function createControllerFactoryForClass<T>(
   controllerCtor: ControllerClass<T>,
@@ -177,7 +172,7 @@ export function createControllerFactoryForClass<T>(
 
 /**
  * Create a controller factory function for a given instance
- * @param controllerCtor Controller instance
+ * @param controllerCtor - Controller instance
  */
 export function createControllerFactoryForInstance<T>(
   controllerInst: T,

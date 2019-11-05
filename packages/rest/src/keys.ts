@@ -3,16 +3,15 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {CoreBindings} from '@loopback/core';
 import {BindingKey, Context} from '@loopback/context';
-
-/**
- * See https://github.com/Microsoft/TypeScript/issues/26985
- */
-// import {OpenApiSpec} from '@loopback/openapi-v3-types';
-import {OpenAPIObject as OpenApiSpec} from 'openapi3-ts';
-
+import {CoreBindings} from '@loopback/core';
+import {HttpProtocol} from '@loopback/http-server';
+import {OpenApiSpec} from '@loopback/openapi-v3';
+import * as https from 'https';
+import {ErrorWriterOptions} from 'strong-error-handler';
+import {BodyParser, RequestBodyParser} from './body-parsers';
 import {HttpHandler} from './http-handler';
+import {RestRouter, RestRouterOptions} from './router';
 import {SequenceHandler} from './sequence';
 import {
   BindElement,
@@ -20,19 +19,14 @@ import {
   GetFromContext,
   InvokeMethod,
   LogError,
-  Request,
-  Response,
   ParseParams,
   Reject,
-  Send,
+  Request,
   RequestBodyParserOptions,
+  Response,
+  Send,
 } from './types';
-
-import {HttpProtocol} from '@loopback/http-server';
-import * as https from 'https';
-import {ErrorWriterOptions} from 'strong-error-handler';
-import {RestRouter, RestRouterOptions} from './router';
-import {RequestBodyParser, BodyParser} from './body-parsers';
+import {RestServer} from './rest.server';
 
 /**
  * RestServer-specific bindings
@@ -51,6 +45,10 @@ export namespace RestBindings {
    */
   export const PORT = BindingKey.create<number>('rest.port');
   /**
+   * Binding key for setting and injecting the socket path of the RestServer
+   */
+  export const PATH = BindingKey.create<string | undefined>('rest.path');
+  /**
    * Binding key for setting and injecting the URL of RestServer
    */
   export const URL = BindingKey.create<string>('rest.url');
@@ -64,6 +62,11 @@ export namespace RestBindings {
   export const HTTPS_OPTIONS = BindingKey.create<https.ServerOptions>(
     'rest.httpsOptions',
   );
+
+  /**
+   * Binding key for the server itself
+   */
+  export const SERVER = BindingKey.create<RestServer>('servers.RestServer');
 
   /**
    * Internal binding key for basePath

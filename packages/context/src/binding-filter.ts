@@ -10,6 +10,7 @@ import {BindingAddress} from './binding-key';
  * A function that filters bindings. It returns `true` to select a given
  * binding.
  *
+ * @remarks
  * TODO(semver-major): We might change this type in the future to either remove
  * the `<ValueType>` or make it as type guard by asserting the matched binding
  * to be typed with `<ValueType>`.
@@ -37,7 +38,6 @@ import {BindingAddress} from './binding-key';
  * 2. `(binding: Readonly<Binding<unknown>>) => binding is Readonly<Binding<ValueType>>`
  *
  */
-// tslint:disable-next-line:no-unused
 export type BindingFilter<ValueType = unknown> = (
   binding: Readonly<Binding<unknown>>,
 ) => boolean;
@@ -61,7 +61,7 @@ export function isBindingAddress(
 
 /**
  * Create a binding filter for the tag pattern
- * @param tagPattern Binding tag name, regexp, or object
+ * @param tagPattern - Binding tag name, regexp, or object
  */
 export function filterByTag(tagPattern: BindingTag | RegExp): BindingFilter {
   if (typeof tagPattern === 'string' || tagPattern instanceof RegExp) {
@@ -84,7 +84,7 @@ export function filterByTag(tagPattern: BindingTag | RegExp): BindingFilter {
 
 /**
  * Create a binding filter from key pattern
- * @param keyPattern Binding key/wildcard, regexp, or a filter function
+ * @param keyPattern - Binding key/wildcard, regexp, or a filter function
  */
 export function filterByKey(
   keyPattern?: string | RegExp | BindingFilter,
@@ -102,7 +102,7 @@ export function filterByKey(
 
 /**
  * Convert a wildcard pattern to RegExp
- * @param pattern A wildcard string with `*` and `?` as special characters.
+ * @param pattern - A wildcard string with `*` and `?` as special characters.
  * - `*` matches zero or more characters except `.` and `:`
  * - `?` matches exactly one character except `.` and `:`
  */

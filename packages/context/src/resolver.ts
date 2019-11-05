@@ -15,7 +15,7 @@ import {
   describeInjectedProperties,
   Injection,
 } from './inject';
-import {ResolutionSession} from './resolution-session';
+import {ResolutionOptions, ResolutionSession} from './resolution-session';
 import {
   BoundValue,
   Constructor,
@@ -36,16 +36,16 @@ const getTargetName = DecoratorFactory.getTargetName;
  * The function returns a class when all dependencies were
  * resolved synchronously, or a Promise otherwise.
  *
- * @param ctor The class constructor to call.
- * @param ctx The context containing values for `@inject` resolution
- * @param session Optional session for binding and dependency resolution
- * @param nonInjectedArgs Optional array of args for non-injected parameters
+ * @param ctor - The class constructor to call.
+ * @param ctx - The context containing values for `@inject` resolution
+ * @param session - Optional session for binding and dependency resolution
+ * @param nonInjectedArgs - Optional array of args for non-injected parameters
  */
 export function instantiateClass<T>(
   ctor: Constructor<T>,
   ctx: Context,
   session?: ResolutionSession,
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nonInjectedArgs?: any[],
 ): ValueOrPromise<T> {
   /* istanbul ignore if */
@@ -118,9 +118,9 @@ function resolveContext(
 
 /**
  * Resolve the value or promise for a given injection
- * @param ctx Context
- * @param injection Descriptor of the injection
- * @param session Optional session for binding and dependency resolution
+ * @param ctx - Context
+ * @param injection - Descriptor of the injection
+ * @param session - Optional session for binding and dependency resolution
  */
 function resolve<T>(
   ctx: Context,
@@ -136,7 +136,7 @@ function resolve<T>(
   }
 
   ctx = resolveContext(ctx, injection, session);
-  let resolved = ResolutionSession.runWithInjection(
+  const resolved = ResolutionSession.runWithInjection(
     s => {
       if (injection.resolve) {
         // A custom resolve function is provided
@@ -148,12 +148,11 @@ function resolve<T>(
           'The binding selector must be an address (string or BindingKey)',
         );
         const key = injection.bindingSelector as BindingAddress;
-        return ctx.getValueOrPromise(key, {
+        const options: ResolutionOptions = {
           session: s,
-          // If the `optional` flag is set for the injection, the resolution
-          // will return `undefined` instead of throwing an error
-          optional: injection.metadata.optional,
-        });
+          ...injection.metadata,
+        };
+        return ctx.getValueOrPromise(key, options);
       }
     },
     injection,
@@ -170,20 +169,20 @@ function resolve<T>(
  * The function returns an argument array when all dependencies were
  * resolved synchronously, or a Promise otherwise.
  *
- * @param target The class for constructor injection or prototype for method
+ * @param target - The class for constructor injection or prototype for method
  * injection
- * @param method The method name. If set to '', the constructor will
+ * @param method - The method name. If set to '', the constructor will
  * be used.
- * @param ctx The context containing values for `@inject` resolution
- * @param session Optional session for binding and dependency resolution
- * @param nonInjectedArgs Optional array of args for non-injected parameters
+ * @param ctx - The context containing values for `@inject` resolution
+ * @param session - Optional session for binding and dependency resolution
+ * @param nonInjectedArgs - Optional array of args for non-injected parameters
  */
 export function resolveInjectedArguments(
-  target: Object,
+  target: object,
   method: string,
   ctx: Context,
   session?: ResolutionSession,
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nonInjectedArgs?: any[],
 ): ValueOrPromise<BoundValue[]> {
   /* istanbul ignore if */
@@ -249,50 +248,6 @@ export function resolveInjectedArguments(
 }
 
 /**
- * Invoke an instance method with dependency injection
- * @param target Target of the method, it will be the class for a static
- * method, and instance or class prototype for a prototype method
- * @param method Name of the method
- * @param ctx Context
- * @param nonInjectedArgs Optional array of args for non-injected parameters
- */
-export function invokeMethod(
-  target: Object,
-  method: string,
-  ctx: Context,
-  // tslint:disable-next-line:no-any
-  nonInjectedArgs?: any[],
-): ValueOrPromise<BoundValue> {
-  const methodName = getTargetName(target, method);
-  /* istanbul ignore if */
-  if (debug.enabled) {
-    debug('Invoking method %s', methodName);
-    if (nonInjectedArgs && nonInjectedArgs.length) {
-      debug('Non-injected arguments:', nonInjectedArgs);
-    }
-  }
-  const argsOrPromise = resolveInjectedArguments(
-    target,
-    method,
-    ctx,
-    undefined,
-    nonInjectedArgs,
-  );
-  const targetWithMethods = <{[method: string]: Function}>target;
-  assert(
-    typeof targetWithMethods[method] === 'function',
-    `Method ${method} not found`,
-  );
-  return transformValueOrPromise(argsOrPromise, args => {
-    /* istanbul ignore if */
-    if (debug.enabled) {
-      debug('Injected arguments for %s:', methodName, args);
-    }
-    return targetWithMethods[method](...args);
-  });
-}
-
-/**
  * Given a class with properties decorated with `@inject`,
  * return the map of properties resolved using the values
  * bound in `ctx`.
@@ -300,9 +255,9 @@ export function invokeMethod(
  * The function returns an argument array when all dependencies were
  * resolved synchronously, or a Promise otherwise.
  *
- * @param constructor The class for which properties should be resolved.
- * @param ctx The context containing values for `@inject` resolution
- * @param session Optional session for binding and dependency resolution
+ * @param constructor - The class for which properties should be resolved.
+ * @param ctx - The context containing values for `@inject` resolution
+ * @param session - Optional session for binding and dependency resolution
  */
 export function resolveInjectedProperties(
   constructor: Function,

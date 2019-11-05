@@ -3,15 +3,14 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-/* istanbul ignore file */
 import {Application} from '@loopback/core';
-import {GreeterComponent} from './component';
+import {GreetingComponent} from './component';
 import {GREETING_SERVICE} from './keys';
 
 export class GreetingApplication extends Application {
   constructor() {
     super();
-    this.component(GreeterComponent);
+    this.component(GreetingComponent);
   }
 
   async main() {
@@ -23,6 +22,6 @@ export class GreetingApplication extends Application {
   }
 
   async getGreetingService() {
-    return await this.get(GREETING_SERVICE);
+    return this.get(GREETING_SERVICE);
   }
 }

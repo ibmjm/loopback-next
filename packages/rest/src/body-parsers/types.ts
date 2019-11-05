@@ -3,7 +3,7 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {ReferenceObject, SchemaObject} from '@loopback/openapi-v3-types';
+import {ReferenceObject, SchemaObject} from '@loopback/openapi-v3';
 import {Request} from '../types';
 /**
  * Request body with metadata
@@ -12,7 +12,7 @@ export type RequestBody = {
   /**
    * Parsed value of the request body
    */
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any | undefined;
   /**
    * Is coercion required? Some forms of request such as urlencoded don't
@@ -39,12 +39,12 @@ export interface BodyParser {
   name: string | symbol;
   /**
    * Indicate if the given media type is supported
-   * @param mediaType Media type
+   * @param mediaType - Media type
    */
   supports(mediaType: string): boolean;
   /**
    * Parse the request body
-   * @param request http request
+   * @param request - http request
    */
   parse(request: Request): Promise<RequestBody>;
 }

@@ -152,7 +152,7 @@ describe('Application', () => {
       expect(binding.tagNames).to.containEql('foo');
     });
 
-    it('binds providers from a component', () => {
+    it('honors tags when binding providers from a component', () => {
       @bind({tags: ['foo']})
       class MyProvider implements Provider<string> {
         value() {
@@ -229,13 +229,79 @@ describe('Application', () => {
     }
   });
 
+  describe('service binding', () => {
+    let app: Application;
+    class MyService {}
+
+    beforeEach(givenApp);
+
+    it('binds a service', () => {
+      const binding = app.service(MyService);
+      expect(Array.from(binding.tagNames)).to.containEql(CoreTags.SERVICE);
+      expect(binding.key).to.equal('services.MyService');
+      expect(binding.scope).to.equal(BindingScope.TRANSIENT);
+      expect(findKeysByTag(app, CoreTags.SERVICE)).to.containEql(binding.key);
+    });
+
+    it('binds a service with custom name', () => {
+      const binding = app.service(MyService, 'my-service');
+      expect(Array.from(binding.tagNames)).to.containEql(CoreTags.SERVICE);
+      expect(binding.key).to.equal('services.my-service');
+      expect(findKeysByTag(app, CoreTags.SERVICE)).to.containEql(binding.key);
+    });
+
+    it('binds a singleton service', () => {
+      @bind({scope: BindingScope.SINGLETON})
+      class MySingletonService {}
+
+      const binding = app.service(MySingletonService);
+      expect(binding.scope).to.equal(BindingScope.SINGLETON);
+      expect(findKeysByTag(app, 'service')).to.containEql(binding.key);
+    });
+
+    it('binds a service provider', () => {
+      @bind({tags: {date: 'now', namespace: 'localServices'}})
+      class MyServiceProvider implements Provider<Date> {
+        value() {
+          return new Date();
+        }
+      }
+
+      const binding = app.service(MyServiceProvider);
+      expect(Array.from(binding.tagNames)).to.containEql(CoreTags.SERVICE);
+      expect(binding.tagMap.date).to.eql('now');
+      expect(binding.key).to.equal('localServices.MyService');
+      expect(binding.scope).to.equal(BindingScope.TRANSIENT);
+      expect(findKeysByTag(app, 'service')).to.containEql(binding.key);
+    });
+
+    it('binds a service provider with name tag', () => {
+      @bind({tags: {date: 'now', name: 'my-service'}})
+      class MyServiceProvider implements Provider<Date> {
+        value() {
+          return new Date();
+        }
+      }
+
+      const binding = app.service(MyServiceProvider);
+      expect(Array.from(binding.tagNames)).to.containEql(CoreTags.SERVICE);
+      expect(binding.tagMap.date).to.eql('now');
+      expect(binding.key).to.equal('services.my-service');
+      expect(findKeysByTag(app, 'service')).to.containEql(binding.key);
+    });
+
+    function givenApp() {
+      app = new Application();
+    }
+  });
+
   function findKeysByTag(ctx: Context, tag: string | RegExp) {
     return ctx.findByTag(tag).map(binding => binding.key);
   }
 });
 
 class FakeServer extends Context implements Server {
-  listening: boolean = false;
+  listening = false;
   constructor() {
     super();
   }

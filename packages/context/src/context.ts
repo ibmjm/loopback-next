@@ -7,8 +7,13 @@ import * as debugFactory from 'debug';
 import {EventEmitter} from 'events';
 import {v1 as uuidv1} from 'uuid';
 import {Binding, BindingTag} from './binding';
+import {
+  ConfigurationResolver,
+  DefaultConfigurationResolver,
+} from './binding-config';
 import {BindingFilter, filterByKey, filterByTag} from './binding-filter';
 import {BindingAddress, BindingKey} from './binding-key';
+import {BindingComparator} from './binding-sorter';
 import {
   ContextEventObserver,
   ContextEventType,
@@ -17,6 +22,7 @@ import {
   Subscription,
 } from './context-observer';
 import {ContextView} from './context-view';
+import {ContextBindings} from './keys';
 import {
   asResolutionOptions,
   ResolutionOptions,
@@ -35,7 +41,7 @@ import {
  * See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-3.html
  */
 if (!Symbol.asyncIterator) {
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (Symbol as any).asyncIterator = Symbol.for('Symbol.asyncIterator');
 }
 /**
@@ -66,6 +72,8 @@ export class Context extends EventEmitter {
    */
   protected _parent?: Context;
 
+  protected configResolver: ConfigurationResolver;
+
   /**
    * Event listeners for parent context keyed by event names. It keeps track
    * of listeners from this context against its parent so that we can remove
@@ -74,7 +82,7 @@ export class Context extends EventEmitter {
   protected _parentEventListeners:
     | Map<
         string,
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (...args: any[]) => void
       >
     | undefined;
@@ -97,7 +105,9 @@ export class Context extends EventEmitter {
   private notificationQueue: AsyncIterableIterator<Notification> | undefined;
 
   /**
-   * Create a new context. For example,
+   * Create a new context.
+   *
+   * @example
    * ```ts
    * // Create a new root context, let the framework to create a unique name
    * const rootCtx = new Context();
@@ -112,8 +122,8 @@ export class Context extends EventEmitter {
    * // from `appCtx`
    * const reqCtx = new Context(appCtx, 'request');
    * ```
-   * @param _parent The optional parent context
-   * @param name Name of the context, if not provided, a `uuid` will be
+   * @param _parent - The optional parent context
+   * @param name - Name of the context, if not provided, a `uuid` will be
    * generated as the name
    */
   constructor(_parent?: Context | string, name?: string) {
@@ -129,9 +139,9 @@ export class Context extends EventEmitter {
   /**
    * Wrap the debug statement so that it always print out the context name
    * as the prefix
-   * @param args Arguments for the debug
+   * @param args - Arguments for the debug
    */
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _debug(...args: any[]) {
     /* istanbul ignore if */
     if (!debug.enabled) return;
@@ -170,7 +180,7 @@ export class Context extends EventEmitter {
   /**
    * Add an event listener to its parent context so that this context will
    * be notified of parent events, such as `bind` or `unbind`.
-   * @param event Event name
+   * @param event - Event name
    */
   private addParentEventListener(event: string) {
     if (this._parent == null) return;
@@ -212,11 +222,12 @@ export class Context extends EventEmitter {
 
   /**
    * Handle errors caught during the notification of observers
-   * @param err Error
+   * @param err - Error
    */
   private handleNotificationError(err: unknown) {
     // Bubbling up the error event over the context chain
     // until we find an error listener
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let ctx: Context | undefined = this;
     while (ctx) {
       if (ctx.listenerCount('error') === 0) {
@@ -278,7 +289,7 @@ export class Context extends EventEmitter {
   /**
    * Listen on given event types and emit `notification` event. This method
    * merge multiple event types into one for notification.
-   * @param eventTypes Context event types
+   * @param eventTypes - Context event types
    */
   private setupNotification(...eventTypes: ContextEventType[]) {
     for (const eventType of eventTypes) {
@@ -317,7 +328,7 @@ export class Context extends EventEmitter {
    * Create a binding with the given key in the context. If a locked binding
    * already exists with the same key, an error will be thrown.
    *
-   * @param key Binding key
+   * @param key - Binding key
    */
   bind<ValueType = BoundValue>(
     key: BindingAddress<ValueType>,
@@ -330,7 +341,7 @@ export class Context extends EventEmitter {
   /**
    * Add a binding to the context. If a locked binding already exists with the
    * same key, an error will be thrown.
-   * @param binding The configured binding to be added
+   * @param binding - The configured binding to be added
    */
   add(binding: Binding<unknown>): this {
     const key = binding.key;
@@ -354,13 +365,135 @@ export class Context extends EventEmitter {
   }
 
   /**
-   * Unbind a binding from the context. No parent contexts will be checked. If
-   * you need to unbind a binding owned by a parent context, use the code below:
+   * Create a corresponding binding for configuration of the target bound by
+   * the given key in the context.
+   *
+   * For example, `ctx.configure('controllers.MyController').to({x: 1})` will
+   * create binding `controllers.MyController:$config` with value `{x: 1}`.
+   *
+   * @param key - The key for the binding to be configured
+   */
+  configure<ConfigValueType = BoundValue>(
+    key: BindingAddress = '',
+  ): Binding<ConfigValueType> {
+    const bindingForConfig = Binding.configure<ConfigValueType>(key);
+    this.add(bindingForConfig);
+    return bindingForConfig;
+  }
+
+  /**
+   * Get the value or promise of configuration for a given binding by key
+   *
+   * @param key - Binding key
+   * @param propertyPath - Property path for the option. For example, `x.y`
+   * requests for `<config>.x.y`. If not set, the `<config>` object will be
+   * returned.
+   * @param resolutionOptions - Options for the resolution.
+   * - optional: if not set or set to `true`, `undefined` will be returned if
+   * no corresponding value is found. Otherwise, an error will be thrown.
+   */
+  getConfigAsValueOrPromise<ConfigValueType>(
+    key: BindingAddress,
+    propertyPath?: string,
+    resolutionOptions?: ResolutionOptions,
+  ): ValueOrPromise<ConfigValueType | undefined> {
+    this.setupConfigurationResolverIfNeeded();
+    return this.configResolver.getConfigAsValueOrPromise(
+      key,
+      propertyPath,
+      resolutionOptions,
+    );
+  }
+
+  /**
+   * Set up the configuration resolver if needed
+   */
+  protected setupConfigurationResolverIfNeeded() {
+    if (!this.configResolver) {
+      // First try the bound ConfigurationResolver to this context
+      const configResolver = this.getSync<ConfigurationResolver>(
+        ContextBindings.CONFIGURATION_RESOLVER,
+        {
+          optional: true,
+        },
+      );
+      if (configResolver) {
+        debug(
+          'Custom ConfigurationResolver is loaded from %s.',
+          ContextBindings.CONFIGURATION_RESOLVER.toString(),
+        );
+        this.configResolver = configResolver;
+      } else {
+        // Fallback to DefaultConfigurationResolver
+        debug('DefaultConfigurationResolver is used.');
+        this.configResolver = new DefaultConfigurationResolver(this);
+      }
+    }
+    return this.configResolver;
+  }
+
+  /**
+   * Resolve configuration for the binding by key
+   *
+   * @param key - Binding key
+   * @param propertyPath - Property path for the option. For example, `x.y`
+   * requests for `<config>.x.y`. If not set, the `<config>` object will be
+   * returned.
+   * @param resolutionOptions - Options for the resolution.
+   */
+  async getConfig<ConfigValueType>(
+    key: BindingAddress,
+    propertyPath?: string,
+    resolutionOptions?: ResolutionOptions,
+  ): Promise<ConfigValueType | undefined> {
+    return this.getConfigAsValueOrPromise<ConfigValueType>(
+      key,
+      propertyPath,
+      resolutionOptions,
+    );
+  }
+
+  /**
+   * Resolve configuration synchronously for the binding by key
+   *
+   * @param key - Binding key
+   * @param propertyPath - Property path for the option. For example, `x.y`
+   * requests for `config.x.y`. If not set, the `config` object will be
+   * returned.
+   * @param resolutionOptions - Options for the resolution.
+   */
+  getConfigSync<ConfigValueType>(
+    key: BindingAddress,
+    propertyPath?: string,
+    resolutionOptions?: ResolutionOptions,
+  ): ConfigValueType | undefined {
+    const valueOrPromise = this.getConfigAsValueOrPromise<ConfigValueType>(
+      key,
+      propertyPath,
+      resolutionOptions,
+    );
+    if (isPromiseLike(valueOrPromise)) {
+      const prop = propertyPath ? ` property ${propertyPath}` : '';
+      throw new Error(
+        `Cannot get config${prop} for ${key} synchronously: the value is a promise`,
+      );
+    }
+    return valueOrPromise;
+  }
+
+  /**
+   * Unbind a binding from the context. No parent contexts will be checked.
+   *
+   * @remarks
+   * If you need to unbind a binding owned by a parent context, use the code
+   * below:
+   *
    * ```ts
    * const ownerCtx = ctx.getOwnerContext(key);
    * return ownerCtx != null && ownerCtx.unbind(key);
    * ```
-   * @param key Binding key
+   *
+   * @param key - Binding key
    * @returns true if the binding key is found and removed from this context
    */
   unbind(key: BindingAddress): boolean {
@@ -378,7 +511,7 @@ export class Context extends EventEmitter {
 
   /**
    * Add a context event observer to the context
-   * @param observer Context observer instance or function
+   * @param observer - Context observer instance or function
    */
   subscribe(observer: ContextEventObserver): Subscription {
     this.observers = this.observers || new Set();
@@ -389,7 +522,7 @@ export class Context extends EventEmitter {
 
   /**
    * Remove the context event observer from the context
-   * @param observer Context event observer
+   * @param observer - Context event observer
    */
   unsubscribe(observer: ContextEventObserver): boolean {
     if (!this.observers) return false;
@@ -397,9 +530,10 @@ export class Context extends EventEmitter {
   }
 
   /**
-   * Close the context and release references to other objects in the context
-   * chain.
+   * Close the context: clear observers, stop notifications, and remove event
+   * listeners from its parent context.
    *
+   * @remarks
    * This method MUST be called to avoid memory leaks once a context object is
    * no longer needed and should be recycled. An example is the `RequestContext`,
    * which is created per request.
@@ -420,13 +554,11 @@ export class Context extends EventEmitter {
       }
       this._parentEventListeners = undefined;
     }
-    this.registry.clear();
-    this._parent = undefined;
   }
 
   /**
    * Check if an observer is subscribed to this context
-   * @param observer Context observer
+   * @param observer - Context observer
    */
   isSubscribed(observer: ContextObserver) {
     if (!this.observers) return false;
@@ -435,10 +567,14 @@ export class Context extends EventEmitter {
 
   /**
    * Create a view of the context chain with the given binding filter
-   * @param filter A function to match bindings
+   * @param filter - A function to match bindings
+   * @param comparator - A function to sort matched bindings
    */
-  createView<T = unknown>(filter: BindingFilter) {
-    const view = new ContextView<T>(this, filter);
+  createView<T = unknown>(
+    filter: BindingFilter,
+    comparator?: BindingComparator,
+  ) {
+    const view = new ContextView<T>(this, filter, comparator);
     view.open();
     return view;
   }
@@ -449,10 +585,10 @@ export class Context extends EventEmitter {
    * APIs such as `ctx.bind('key').to(...).tag(...);` and give observers the
    * fully populated binding.
    *
-   * @param eventType Event names: `bind` or `unbind`
-   * @param binding Binding bound or unbound
-   * @param context Owner context
-   * @param observers Current set of context observers
+   * @param eventType - Event names: `bind` or `unbind`
+   * @param binding - Binding bound or unbound
+   * @param context - Owner context
+   * @param observers - Current set of context observers
    */
   protected async notifyObservers(
     eventType: ContextEventType,
@@ -474,7 +610,7 @@ export class Context extends EventEmitter {
   /**
    * Check if a binding exists with the given key in the local context without
    * delegating to the parent context
-   * @param key Binding key
+   * @param key - Binding key
    */
   contains(key: BindingAddress): boolean {
     key = BindingKey.validate(key);
@@ -483,7 +619,7 @@ export class Context extends EventEmitter {
 
   /**
    * Check if a key is bound in the context or its ancestors
-   * @param key Binding key
+   * @param key - Binding key
    */
   isBound(key: BindingAddress): boolean {
     if (this.contains(key)) return true;
@@ -495,7 +631,7 @@ export class Context extends EventEmitter {
 
   /**
    * Get the owning context for a binding key
-   * @param key Binding key
+   * @param key - Binding key
    */
   getOwnerContext(key: BindingAddress): Context | undefined {
     if (this.contains(key)) return this;
@@ -507,7 +643,7 @@ export class Context extends EventEmitter {
 
   /**
    * Find bindings using a key pattern or filter function
-   * @param pattern A filter function, a regexp or a wildcard pattern with
+   * @param pattern - A filter function, a regexp or a wildcard pattern with
    * optional `*` and `?`. Find returns such bindings where the key matches
    * the provided pattern.
    *
@@ -537,7 +673,7 @@ export class Context extends EventEmitter {
    * Find bindings using the tag filter. If the filter matches one of the
    * binding tags, the binding is included.
    *
-   * @param tagFilter  A filter for tags. It can be in one of the following
+   * @param tagFilter - A filter for tags. It can be in one of the following
    * forms:
    * - A regular expression, such as `/controller/`
    * - A wildcard pattern string with optional `*` and `?`, such as `'con*'`
@@ -585,9 +721,9 @@ export class Context extends EventEmitter {
    * const a = await ctx.get<number>('data#numbers.a');
    * ```
    *
-   * @param keyWithPath The binding key, optionally suffixed with a path to the
+   * @param keyWithPath - The binding key, optionally suffixed with a path to the
    *   (deeply) nested property to retrieve.
-   * @param session Optional session for resolution (accepted for backward
+   * @param session - Optional session for resolution (accepted for backward
    * compatibility)
    * @returns A promise of the bound value.
    */
@@ -610,9 +746,9 @@ export class Context extends EventEmitter {
    * });
    * ```
    *
-   * @param keyWithPath The binding key, optionally suffixed with a path to the
+   * @param keyWithPath - The binding key, optionally suffixed with a path to the
    *   (deeply) nested property to retrieve.
-   * @param options Options for resolution.
+   * @param options - Options for resolution.
    * @returns A promise of the bound value, or a promise of undefined when
    * the optional binding is not found.
    */
@@ -627,7 +763,7 @@ export class Context extends EventEmitter {
     optionsOrSession?: ResolutionOptionsOrSession,
   ): Promise<ValueType | undefined> {
     this._debug('Resolving binding: %s', keyWithPath);
-    return await this.getValueOrPromise<ValueType | undefined>(
+    return this.getValueOrPromise<ValueType | undefined>(
       keyWithPath,
       optionsOrSession,
     );
@@ -651,9 +787,9 @@ export class Context extends EventEmitter {
    * const config = await ctx.getSync<RestComponentConfig>('config#rest');
    * ```
    *
-   * @param keyWithPath The binding key, optionally suffixed with a path to the
+   * @param keyWithPath - The binding key, optionally suffixed with a path to the
    *   (deeply) nested property to retrieve.
-   * @param session Session for resolution (accepted for backward compatibility)
+   * @param session - Session for resolution (accepted for backward compatibility)
    * @returns A promise of the bound value.
    */
   getSync<ValueType>(
@@ -679,9 +815,9 @@ export class Context extends EventEmitter {
    * });
    * ```
    *
-   * @param keyWithPath The binding key, optionally suffixed with a path to the
+   * @param keyWithPath - The binding key, optionally suffixed with a path to the
    *   (deeply) nested property to retrieve.
-   * @param options Options for resolution.
+   * @param options - Options for resolution.
    * @returns The bound value, or undefined when an optional binding is not found.
    */
   getSync<ValueType>(
@@ -714,7 +850,7 @@ export class Context extends EventEmitter {
    * Look up a binding by key in the context and its ancestors. If no matching
    * binding is found, an error will be thrown.
    *
-   * @param key Binding key
+   * @param key - Binding key
    */
   getBinding<ValueType = BoundValue>(
     key: BindingAddress<ValueType>,
@@ -725,8 +861,8 @@ export class Context extends EventEmitter {
    * binding is found and `options.optional` is not set to true, an error will
    * be thrown.
    *
-   * @param key Binding key
-   * @param options Options to control if the binding is optional. If
+   * @param key - Binding key
+   * @param options - Options to control if the binding is optional. If
    * `options.optional` is set to true, the method will return `undefined`
    * instead of throwing an error if the binding key is not found.
    */
@@ -757,8 +893,8 @@ export class Context extends EventEmitter {
 
   /**
    * Find or create a binding for the given key
-   * @param key Binding address
-   * @param policy Binding creation policy
+   * @param key - Binding address
+   * @param policy - Binding creation policy
    */
   findOrCreateBinding<T>(
     key: BindingAddress<T>,
@@ -799,9 +935,9 @@ export class Context extends EventEmitter {
    * ctx.getValueOrPromise<number>('data#numbers.a');
    * ```
    *
-   * @param keyWithPath The binding key, optionally suffixed with a path to the
+   * @param keyWithPath - The binding key, optionally suffixed with a path to the
    *   (deeply) nested property to retrieve.
-   * @param optionsOrSession Options for resolution or a session
+   * @param optionsOrSession - Options for resolution or a session
    * @returns The bound value or a promise of the bound value, depending
    *   on how the binding is configured.
    * @internal

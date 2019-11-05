@@ -3,9 +3,10 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Client} from '@loopback/testlab';
-import {setupExpressApplication} from './test-helper';
+import {Client, expect} from '@loopback/testlab';
+import {HelloObserver} from '../../observers';
 import {ExpressServer} from '../../server';
+import {setupExpressApplication} from './test-helper';
 
 describe('ExpressApplication', () => {
   let server: ExpressServer;
@@ -45,7 +46,9 @@ describe('ExpressApplication', () => {
     await client
       .get('/api/explorer')
       .expect(301)
-      .expect('location', '/api/explorer/');
+      // expect relative redirect so that it works seamlessly with many forms
+      // of base path, whether within the app or applied by a reverse proxy
+      .expect('location', './explorer/');
   });
 
   it('displays explorer page', async () => {
@@ -53,7 +56,15 @@ describe('ExpressApplication', () => {
       .get('/api/explorer/')
       .expect(200)
       .expect('content-type', /html/)
-      .expect(/url\: '\/api\/openapi\.json'\,/)
+      .expect(/url\: '\.\/openapi\.json'\,/)
       .expect(/<title>LoopBack API Explorer/);
+  });
+
+  it('triggers life cycle start', async () => {
+    const observer: HelloObserver = await server.lbApp.get(
+      'lifeCycleObservers.HelloObserver',
+    );
+    expect(observer.events.length).to.be.above(0);
+    expect(observer.events[0]).to.match(/hello-start$/);
   });
 });

@@ -3,14 +3,18 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {
-  ParameterObject,
-  ResponsesObject,
-  OperationObject,
-} from '@loopback/openapi-v3-types';
-import {param, get, patch, operation, getControllerSpec} from '../../../../';
 import {anOperationSpec} from '@loopback/openapi-spec-builder';
 import {expect} from '@loopback/testlab';
+import {
+  get,
+  getControllerSpec,
+  operation,
+  OperationObject,
+  param,
+  ParameterObject,
+  patch,
+  ResponsesObject,
+} from '../../../../';
 
 describe('Routing metadata for parameters', () => {
   describe('@param', () => {
@@ -167,7 +171,7 @@ describe('Routing metadata for parameters', () => {
     it('reports error if an array parameter type is not Array', () => {
       expect.throws(
         () => {
-          // tslint:disable-next-line:no-unused
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           class MyController {
             @get('/greet')
             greet(
@@ -185,7 +189,7 @@ describe('Routing metadata for parameters', () => {
         @get('/greet')
         greet(
           @param.array('names', 'query', {type: 'string'})
-          names: /* tslint:disable-next-line:no-any */
+          names: // eslint-disable-next-line @typescript-eslint/no-explicit-any
           any,
         ) {}
       }

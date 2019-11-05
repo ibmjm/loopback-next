@@ -14,7 +14,8 @@ import {get, param, RestApplication} from '../../..';
 describe('Coercion', () => {
   let app: RestApplication;
   let client: Client;
-  let spy: sinon.SinonSpy;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let spy: sinon.SinonSpy<[any], any>;
 
   before(givenAClient);
 
@@ -48,7 +49,7 @@ describe('Coercion', () => {
     }
 
     @get('/object-from-query')
-    getObjectFromQuery(@param.query.object('filter') filter: Object) {
+    getObjectFromQuery(@param.query.object('filter') filter: object) {
       return filter;
     }
   }

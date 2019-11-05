@@ -6,12 +6,12 @@
 import {ClassDecoratorFactory} from '@loopback/metadata';
 import {
   asBindingTemplate,
+  asClassOrProvider,
   asProvider,
   BindingMetadata,
   BindingSpec,
   BINDING_METADATA_KEY,
   isProviderClass,
-  asClassOrProvider,
   removeNameAndKeyTags,
 } from './binding-inspector';
 import {Provider} from './provider';
@@ -37,6 +37,13 @@ class BindDecoratorFactory extends ClassDecoratorFactory<BindingMetadata> {
     }
   }
 
+  mergeWithOwn(ownMetadata: BindingMetadata) {
+    return {
+      templates: [...ownMetadata.templates, ...this.spec.templates],
+      target: this.spec.target,
+    };
+  }
+
   withTarget(spec: BindingMetadata, target: Function) {
     spec.target = target as Constructor<unknown>;
     return spec;
@@ -54,7 +61,7 @@ class BindDecoratorFactory extends ClassDecoratorFactory<BindingMetadata> {
  * }
  * ```
  *
- * @param specs A list of binding scope/tags or template functions to
+ * @param specs - A list of binding scope/tags or template functions to
  * configure the binding
  */
 export function bind(...specs: BindingSpec[]): ClassDecorator {
@@ -76,6 +83,7 @@ export function bind(...specs: BindingSpec[]): ClassDecorator {
     const decorator = BindDecoratorFactory.createDecorator(
       BINDING_METADATA_KEY,
       spec,
+      {decoratorName: '@bind'},
     );
     decorator(target);
   };

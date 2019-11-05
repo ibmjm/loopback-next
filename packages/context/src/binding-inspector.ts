@@ -4,11 +4,14 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {MetadataAccessor, MetadataInspector} from '@loopback/metadata';
+import * as debugFactory from 'debug';
 import {Binding, BindingScope, BindingTag, BindingTemplate} from './binding';
 import {BindingAddress} from './binding-key';
 import {ContextTags} from './keys';
 import {Provider} from './provider';
 import {Constructor} from './value-promise';
+
+const debug = debugFactory('loopback:context:binding-inspector');
 
 /**
  * Binding metadata from `@bind`
@@ -47,7 +50,7 @@ export type BindingSpec = BindingTemplate | BindingScopeAndTags;
 
 /**
  * Check if a class implements `Provider` interface
- * @param cls A class
+ * @param cls - A class
  */
 export function isProviderClass(
   cls: Constructor<unknown>,
@@ -58,27 +61,28 @@ export function isProviderClass(
 /**
  * A factory function to create a template function to bind the target class
  * as a `Provider`.
- * @param target Target provider class
+ * @param target - Target provider class
  */
 export function asProvider(
   target: Constructor<Provider<unknown>>,
 ): BindingTemplate {
-  return binding =>
+  return function bindAsProvider(binding) {
     binding.toProvider(target).tag(ContextTags.PROVIDER, {
       [ContextTags.TYPE]: ContextTags.PROVIDER,
     });
+  };
 }
 
 /**
  * A factory function to create a template function to bind the target class
  * as a class or `Provider`.
- * @param target Target class, which can be an implementation of `Provider`
+ * @param target - Target class, which can be an implementation of `Provider`
  */
 export function asClassOrProvider(
   target: Constructor<unknown>,
 ): BindingTemplate {
   // Add a template to bind to a class or provider
-  return binding => {
+  return function bindAsClassOrProvider(binding) {
     if (isProviderClass(target)) {
       asProvider(target)(binding);
     } else {
@@ -89,12 +93,12 @@ export function asClassOrProvider(
 
 /**
  * Convert binding scope and tags as a template function
- * @param scopeAndTags Binding scope and tags
+ * @param scopeAndTags - Binding scope and tags
  */
 export function asBindingTemplate(
   scopeAndTags: BindingScopeAndTags,
 ): BindingTemplate {
-  return binding => {
+  return function applyBindingScopeAndTag(binding) {
     if (scopeAndTags.scope) {
       binding.inScope(scopeAndTags.scope);
     }
@@ -110,7 +114,7 @@ export function asBindingTemplate(
 
 /**
  * Get binding metadata for a class
- * @param target The target class
+ * @param target - The target class
  */
 export function getBindingMetadata(
   target: Function,
@@ -134,16 +138,17 @@ export function removeNameAndKeyTags(binding: Binding<unknown>) {
 /**
  * Get the binding template for a class with binding metadata
  *
- * @param cls A class with optional `@bind`
+ * @param cls - A class with optional `@bind`
  */
 export function bindingTemplateFor<T = unknown>(
   cls: Constructor<T | Provider<T>>,
 ): BindingTemplate<T> {
   const spec = getBindingMetadata(cls);
+  debug('class %s has binding metadata', cls.name, spec);
   const templateFunctions = (spec && spec.templates) || [
     asClassOrProvider(cls),
   ];
-  return binding => {
+  return function applyBindingTemplatesFromMetadata(binding) {
     for (const t of templateFunctions) {
       binding.apply(t);
     }
@@ -155,7 +160,9 @@ export function bindingTemplateFor<T = unknown>(
 }
 
 /**
- * Mapping artifact types to binding key namespaces (prefixes). For example:
+ * Mapping artifact types to binding key namespaces (prefixes).
+ *
+ * @example
  * ```ts
  * {
  *   repository: 'repositories'
@@ -206,19 +213,30 @@ export type BindingFromClassOptions = {
  * - `binding.toProvider(cls)`: it `cls` is a value provider class with a
  * prototype method `value()`
  *
- * @param cls A class. It can be either a plain class or  a value provider class
- * @param options Options to customize the binding key
+ * @param cls - A class. It can be either a plain class or  a value provider class
+ * @param options - Options to customize the binding key
  */
 export function createBindingFromClass<T = unknown>(
   cls: Constructor<T | Provider<T>>,
   options: BindingFromClassOptions = {},
 ): Binding<T> {
-  const templateFn = bindingTemplateFor(cls);
-  let key = options.key;
-  if (!key) {
-    key = buildBindingKey(cls, options);
+  debug('create binding from class %s with options', cls.name, options);
+  try {
+    const templateFn = bindingTemplateFor(cls);
+    const key = buildBindingKey(cls, options);
+    const binding = Binding.bind<T>(key).apply(templateFn);
+    applyClassBindingOptions(binding, options);
+    return binding;
+  } catch (err) {
+    err.message += ` (while building binding for class ${cls.name})`;
+    throw err;
   }
-  const binding = Binding.bind<T>(key).apply(templateFn);
+}
+
+function applyClassBindingOptions<T>(
+  binding: Binding<T>,
+  options: BindingFromClassOptions,
+) {
   if (options.name) {
     binding.tag({name: options.name});
   }
@@ -228,13 +246,12 @@ export function createBindingFromClass<T = unknown>(
   if (options.defaultScope) {
     binding.applyDefaultScope(options.defaultScope);
   }
-  return binding;
 }
 
 /**
  * Find/infer binding key namespace for a type
- * @param type Artifact type, such as `controller`, `datasource`, or `server`
- * @param typeNamespaces An object mapping type names to namespaces
+ * @param type - Artifact type, such as `controller`, `datasource`, or `server`
+ * @param typeNamespaces - An object mapping type names to namespaces
  */
 function getNamespace(type: string, typeNamespaces = DEFAULT_TYPE_NAMESPACES) {
   if (type in typeNamespaces) {
@@ -263,18 +280,20 @@ function getNamespace(type: string, typeNamespaces = DEFAULT_TYPE_NAMESPACES) {
  *     - `name` tag value
  *     - the class name
  *
- * @param cls A class to be bound
- * @param options Options to customize how to build the key
+ * @param cls - A class to be bound
+ * @param options - Options to customize how to build the key
  */
 function buildBindingKey(
   cls: Constructor<unknown>,
   options: BindingFromClassOptions = {},
 ) {
+  if (options.key) return options.key;
+
   const templateFn = bindingTemplateFor(cls);
   // Create a temporary binding
   const bindingTemplate = new Binding('template').apply(templateFn);
   // Is there a `key` tag?
-  let key: string = options.key || bindingTemplate.tagMap[ContextTags.KEY];
+  let key: string = bindingTemplate.tagMap[ContextTags.KEY];
   if (key) return key;
 
   let namespace =

@@ -3,10 +3,11 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {expect} from '@loopback/testlab';
+import {expect, toJSON} from '@loopback/testlab';
 import {
   bindModel,
   DefaultCrudRepository,
+  DefaultTransactionalRepository,
   Entity,
   EntityNotFoundError,
   juggler,
@@ -14,6 +15,23 @@ import {
   ModelDefinition,
   property,
 } from '../../..';
+import {
+  belongsTo,
+  BelongsToAccessor,
+  BelongsToDefinition,
+  createBelongsToAccessor,
+  createHasManyRepositoryFactory,
+  createHasOneRepositoryFactory,
+  hasMany,
+  HasManyDefinition,
+  HasManyRepositoryFactory,
+  hasOne,
+  HasOneDefinition,
+  HasOneRepositoryFactory,
+  InclusionResolver,
+} from '../../../relations';
+import {CrudConnectorStub} from '../crud-connector.stub';
+const TransactionClass = require('loopback-datasource-juggler').Transaction;
 
 describe('legacy loopback-datasource-juggler', () => {
   let ds: juggler.DataSource;
@@ -28,13 +46,11 @@ describe('legacy loopback-datasource-juggler', () => {
   });
 
   it('creates models', () => {
-    /* tslint:disable-next-line:variable-name */
     const Note = ds.createModel<juggler.PersistedModelClass>(
       'note',
       {title: 'string', content: 'string', id: {type: 'number', id: true}},
       {},
     );
-    /* tslint:disable-next-line:variable-name */
     const Note2 = bindModel(Note, ds);
     expect(Note2.modelName).to.eql('note');
     expect(Note2.definition).to.eql(Note.definition);
@@ -95,8 +111,8 @@ describe('DefaultCrudRepository', () => {
       });
 
       created: Date;
-      toBuy: String[];
-      toVisit: String[];
+      toBuy: string[];
+      toVisit: string[];
     }
 
     it('converts PropertyDefinition with array type', () => {
@@ -128,13 +144,13 @@ describe('DefaultCrudRepository', () => {
       @model()
       class Role {
         @property()
-        name: String;
+        name: string;
       }
 
       @model()
       class Address {
         @property()
-        street: String;
+        street: string;
       }
 
       @model()
@@ -146,7 +162,7 @@ describe('DefaultCrudRepository', () => {
         id: number;
 
         @property({type: 'string'})
-        name: String;
+        name: string;
 
         @property.array(Role)
         roles: Role[];
@@ -157,7 +173,6 @@ describe('DefaultCrudRepository', () => {
 
       expect(ds.getModel('User')).undefined();
 
-      // tslint:disable-next-line:no-unused-expression
       new DefaultCrudRepository(User, ds);
 
       const JugglerUser = ds.getModel('User')!;
@@ -180,7 +195,7 @@ describe('DefaultCrudRepository', () => {
         .of.length(1);
 
       // FIXME(bajtos) PropertyDefinition in juggler does not allow array type!
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rolesModel = (rolesProperty.type as any)[0] as typeof juggler.ModelBase;
       expect(rolesModel).to.be.a.Function();
       expect(rolesModel).to.equal(ds.getModel('Role'));
@@ -190,6 +205,39 @@ describe('DefaultCrudRepository', () => {
         name: 'Role',
         properties: {name: {type: String}},
       });
+
+      // issue 2912: make sure the juggler leaves the original model definition alone
+      expect(User.definition.properties.roles.itemType).to.equal(Role);
+      expect(User.definition.properties.address.type).to.equal(Address);
+    });
+
+    it('handles recursive model references', () => {
+      @model()
+      class ReportState extends Entity {
+        @property({id: true})
+        id: string;
+
+        @property.array(ReportState, {})
+        states: ReportState[];
+
+        @property({
+          type: 'string',
+        })
+        benchmarkId?: string;
+
+        @property({
+          type: 'string',
+        })
+        color?: string;
+
+        constructor(data?: Partial<ReportState>) {
+          super(data);
+        }
+      }
+      const repo = new DefaultCrudRepository(ReportState, ds);
+      const definition = repo.modelClass.definition;
+      const typeOfStates = definition.properties.states.type;
+      expect(typeOfStates).to.eql([repo.modelClass]);
     });
   });
 
@@ -268,6 +316,190 @@ describe('DefaultCrudRepository', () => {
         message: 'Entity not found: Note with id 999999',
       });
     });
+  });
+
+  context('find* methods including relations', () => {
+    @model()
+    class Author extends Entity {
+      @property({id: true})
+      id?: number;
+      @property()
+      name: string;
+      @belongsTo(() => Folder)
+      folderId: number;
+    }
+
+    @model()
+    class Folder extends Entity {
+      @property({id: true})
+      id?: number;
+      @property()
+      name: string;
+      @hasMany(() => File)
+      files: File[];
+      @hasOne(() => Author)
+      author: Author;
+    }
+
+    @model()
+    class File extends Entity {
+      @property({id: true})
+      id?: number;
+      @property()
+      title: string;
+      @belongsTo(() => Folder)
+      folderId: number;
+    }
+
+    let folderRepo: DefaultCrudRepository<Folder, unknown, {}>;
+    let fileRepo: DefaultCrudRepository<File, unknown, {}>;
+    let authorRepo: DefaultCrudRepository<Author, unknown, {}>;
+
+    let folderFiles: HasManyRepositoryFactory<File, typeof Folder.prototype.id>;
+    let fileFolder: BelongsToAccessor<Folder, typeof File.prototype.id>;
+    let folderAuthor: HasOneRepositoryFactory<
+      Author,
+      typeof Folder.prototype.id
+    >;
+
+    before(() => {
+      ds = new juggler.DataSource({
+        name: 'db',
+        connector: 'memory',
+      });
+      folderRepo = new DefaultCrudRepository(Folder, ds);
+      fileRepo = new DefaultCrudRepository(File, ds);
+      authorRepo = new DefaultCrudRepository(Author, ds);
+    });
+
+    before(() => {
+      // using a variable instead of a repository property
+      folderFiles = createHasManyRepositoryFactory(
+        Folder.definition.relations.files as HasManyDefinition,
+        async () => fileRepo,
+      );
+      folderAuthor = createHasOneRepositoryFactory(
+        Folder.definition.relations.author as HasOneDefinition,
+        async () => authorRepo,
+      );
+      fileFolder = createBelongsToAccessor(
+        File.definition.relations.folder as BelongsToDefinition,
+        async () => folderRepo,
+        fileRepo,
+      );
+    });
+
+    beforeEach(async () => {
+      await folderRepo.deleteAll();
+      await fileRepo.deleteAll();
+      await authorRepo.deleteAll();
+    });
+
+    it('implements Repository.find() with included models', async () => {
+      const createdFolders = await folderRepo.createAll([
+        {name: 'f1', id: 1},
+        {name: 'f2', id: 2},
+      ]);
+      const files = await fileRepo.createAll([
+        {id: 1, title: 'file1', folderId: 1},
+        {id: 2, title: 'file2', folderId: 3},
+      ]);
+
+      folderRepo.registerInclusionResolver('files', hasManyResolver);
+
+      const folders = await folderRepo.find({include: [{relation: 'files'}]});
+
+      expect(toJSON(folders)).to.deepEqual([
+        {...createdFolders[0].toJSON(), files: [toJSON(files[0])]},
+        {...createdFolders[1].toJSON(), files: []},
+      ]);
+    });
+
+    it('implements Repository.findById() with included models', async () => {
+      const folders = await folderRepo.createAll([
+        {name: 'f1', id: 1},
+        {name: 'f2', id: 2},
+      ]);
+      const createdFile = await fileRepo.create({
+        id: 1,
+        title: 'file1',
+        folderId: 1,
+      });
+
+      fileRepo.registerInclusionResolver('folder', belongsToResolver);
+
+      const file = await fileRepo.findById(1, {
+        include: [{relation: 'folder'}],
+      });
+
+      expect(file.toJSON()).to.deepEqual({
+        ...createdFile.toJSON(),
+        folder: folders[0].toJSON(),
+      });
+    });
+
+    it('implements Repository.findOne() with included models', async () => {
+      const folders = await folderRepo.createAll([
+        {name: 'f1', id: 1},
+        {name: 'f2', id: 2},
+      ]);
+      const createdAuthor = await authorRepo.create({
+        id: 1,
+        name: 'a1',
+        folderId: 1,
+      });
+
+      folderRepo.registerInclusionResolver('author', hasOneResolver);
+
+      const folder = await folderRepo.findOne({
+        include: [{relation: 'author'}],
+      });
+
+      expect(folder!.toJSON()).to.deepEqual({
+        ...folders[0].toJSON(),
+        author: createdAuthor.toJSON(),
+      });
+    });
+
+    // stub resolvers
+
+    const hasManyResolver: InclusionResolver<Folder, File> = async entities => {
+      const files = [];
+      for (const entity of entities) {
+        const file = await folderFiles(entity.id).find();
+        files.push(file);
+      }
+
+      return files;
+    };
+
+    const belongsToResolver: InclusionResolver<
+      File,
+      Folder
+    > = async entities => {
+      const folders = [];
+
+      for (const file of entities) {
+        const folder = await fileFolder(file.folderId);
+        folders.push(folder);
+      }
+
+      return folders;
+    };
+
+    const hasOneResolver: InclusionResolver<
+      Folder,
+      Author
+    > = async entities => {
+      const authors = [];
+
+      for (const folder of entities) {
+        const author = await folderAuthor(folder.id).get();
+        authors.push(author);
+      }
+
+      return authors;
+    };
   });
 
   it('implements Repository.delete()', async () => {
@@ -414,5 +646,66 @@ describe('DefaultCrudRepository', () => {
     await expect(repo.execute('query', [])).to.be.rejectedWith(
       'execute() must be implemented by the connector',
     );
+  });
+
+  it('has the property inclusionResolvers', () => {
+    const repo = new DefaultCrudRepository(Note, ds);
+    expect(repo.inclusionResolvers).to.be.instanceof(Map);
+  });
+
+  it('implements Repository.registerInclusionResolver()', () => {
+    const repo = new DefaultCrudRepository(Note, ds);
+    const resolver: InclusionResolver<Note, Entity> = async entities => {
+      return entities;
+    };
+    repo.registerInclusionResolver('notes', resolver);
+    const setResolver = repo.inclusionResolvers.get('notes');
+    expect(setResolver).to.eql(resolver);
+  });
+});
+
+describe('DefaultTransactionalRepository', () => {
+  let ds: juggler.DataSource;
+  class Note extends Entity {
+    static definition = new ModelDefinition({
+      name: 'Note',
+      properties: {
+        title: 'string',
+        content: 'string',
+        id: {name: 'id', type: 'number', id: true},
+      },
+    });
+
+    title?: string;
+    content?: string;
+    id: number;
+
+    constructor(data: Partial<Note>) {
+      super(data);
+    }
+  }
+
+  beforeEach(() => {
+    ds = new juggler.DataSource({
+      name: 'db',
+      connector: 'memory',
+    });
+  });
+
+  it('throws an error when beginTransaction() not implemented', async () => {
+    const repo = new DefaultTransactionalRepository(Note, ds);
+    await expect(repo.beginTransaction({})).to.be.rejectedWith(
+      'beginTransaction must be function implemented by the connector',
+    );
+  });
+  it('calls connector beginTransaction() when available', async () => {
+    const crudDs = new juggler.DataSource({
+      name: 'db',
+      connector: CrudConnectorStub,
+    });
+
+    const repo = new DefaultTransactionalRepository(Note, crudDs);
+    const res = await repo.beginTransaction();
+    expect(res).to.be.instanceOf(TransactionClass);
   });
 });

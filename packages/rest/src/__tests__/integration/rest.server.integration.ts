@@ -10,7 +10,7 @@ import {
   expect,
   givenHttpServerConfig,
   httpsGetAsync,
-  itSkippedOnTravis,
+  skipOnTravis,
   supertest,
 } from '@loopback/testlab';
 import * as fs from 'fs';
@@ -140,6 +140,17 @@ describe('RestServer (integration)', () => {
     server.bind(RestBindings.PORT).to(0);
     await server.start();
     expect(server.getSync(RestBindings.PORT)).to.not.equal(80);
+    await server.stop();
+  });
+
+  it('disables listening if noListen is set to true', async () => {
+    const server = await givenAServer({rest: {listenOnStart: false, port: 0}});
+    await server.start();
+    // No port is assigned
+    expect(server.getSync(RestBindings.PORT)).to.eql(0);
+    // No server url is set
+    expect(server.url).to.be.undefined();
+    expect(server.listening).to.be.false();
     await server.stop();
   });
 
@@ -294,7 +305,7 @@ describe('RestServer (integration)', () => {
      * A mock-up xml parser
      */
     class XmlBodyParser implements BodyParser {
-      name: string = 'xml';
+      name = 'xml';
       supports(mediaType: string) {
         return !!is(mediaType, 'xml');
       }
@@ -506,6 +517,47 @@ paths:
     await test.get('/explorer').expect(404);
   });
 
+  it('can add openApiSpec endpoints before express initialization', async () => {
+    const server = await givenAServer();
+    server.addOpenApiSpecEndpoint('/custom-openapi.json', {
+      version: '3.0.0',
+      format: 'json',
+    });
+
+    const test = createClientForHandler(server.requestHandler);
+    await test.get('/custom-openapi.json').expect(200);
+  });
+
+  // this doesn't work: once the generic routes have been added to express to
+  // direct requests at controllers, adding OpenAPI spec routes after that
+  // no longer works in the sense that express won't ever try those routes
+  // https://github.com/strongloop/loopback-next/issues/433 will make changes
+  // that make it possible to enable this test
+  it.skip('can add openApiSpec endpoints after express initialization', async () => {
+    const server = await givenAServer();
+    const test = createClientForHandler(server.requestHandler);
+    server.addOpenApiSpecEndpoint('/custom-openapi.json', {
+      version: '3.0.0',
+      format: 'json',
+    });
+
+    await test.get('/custom-openapi.json').expect(200);
+  });
+
+  it('rejects duplicate additions of openApiSpec endpoints', async () => {
+    const server = await givenAServer();
+    server.addOpenApiSpecEndpoint('/custom-openapi.json', {
+      version: '3.0.0',
+      format: 'json',
+    });
+    expect(() =>
+      server.addOpenApiSpecEndpoint('/custom-openapi.json', {
+        version: '3.0.0',
+        format: 'yaml',
+      }),
+    ).to.throw(/already configured/);
+  });
+
   it('exposes "GET /explorer" endpoint', async () => {
     const app = new Application();
     app.component(RestComponent);
@@ -530,6 +582,7 @@ paths:
         '\\?url=http://\\d+.\\d+.\\d+.\\d+:\\d+/openapi.json',
       ].join(''),
     );
+    expect(response.status).to.equal(302);
     expect(response.get('Location')).match(expectedUrl);
     expect(response.get('Access-Control-Allow-Origin')).to.equal('*');
     expect(response.get('Access-Control-Allow-Credentials')).to.equal('true');
@@ -640,6 +693,7 @@ paths:
         '\\?url=http://\\d+.\\d+.\\d+.\\d+:\\d+/openapi.json',
       ].join(''),
     );
+    expect(response.status).to.equal(302);
     expect(response.get('Location')).match(expectedUrl);
   });
 
@@ -663,19 +717,19 @@ paths:
         '\\?url=http://\\d+.\\d+.\\d+.\\d+:\\d+/openapi.json',
       ].join(''),
     );
+    expect(response.status).to.equal(302);
     expect(response.get('Location')).match(expectedUrl);
   });
 
   it('supports HTTPS protocol with key and certificate files', async () => {
     const keyPath = path.join(FIXTURES, 'key.pem');
     const certPath = path.join(FIXTURES, 'cert.pem');
-    const options = {
+    const serverOptions = givenHttpServerConfig({
       port: 0,
       protocol: 'https',
       key: fs.readFileSync(keyPath),
       cert: fs.readFileSync(certPath),
-    };
-    const serverOptions = givenHttpServerConfig(options);
+    });
     const server = await givenAServer({rest: serverOptions});
     server.handler(dummyRequestHandler);
     await server.start();
@@ -686,13 +740,12 @@ paths:
 
   it('supports HTTPS protocol with a pfx file', async () => {
     const pfxPath = path.join(FIXTURES, 'pfx.pfx');
-    const options = {
+    const serverOptions = givenHttpServerConfig({
       port: 0,
-      protocol: 'https',
+      protocol: 'https' as 'https',
       pfx: fs.readFileSync(pfxPath),
       passphrase: 'loopback4',
-    };
-    const serverOptions = givenHttpServerConfig(options);
+    });
     const server = await givenAServer({rest: serverOptions});
     server.handler(dummyRequestHandler);
     await server.start();
@@ -702,7 +755,7 @@ paths:
     await server.stop();
   });
 
-  itSkippedOnTravis('handles IPv6 loopback address in HTTPS', async () => {
+  skipOnTravis(it, 'handles IPv6 loopback address in HTTPS', async () => {
     const keyPath = path.join(FIXTURES, 'key.pem');
     const certPath = path.join(FIXTURES, 'cert.pem');
     const server = await givenAServer({
@@ -723,7 +776,7 @@ paths:
   });
 
   // https://github.com/strongloop/loopback-next/issues/1623
-  itSkippedOnTravis('handles IPv6 address for API Explorer UI', async () => {
+  skipOnTravis(it, 'handles IPv6 address for API Explorer UI', async () => {
     const keyPath = path.join(FIXTURES, 'key.pem');
     const certPath = path.join(FIXTURES, 'cert.pem');
     const server = await givenAServer({
@@ -753,13 +806,12 @@ paths:
   it('honors HTTPS config binding after instantiation', async () => {
     const keyPath = path.join(FIXTURES, 'key.pem');
     const certPath = path.join(FIXTURES, 'cert.pem');
-    const options = {
+    const serverOptions = givenHttpServerConfig({
       port: 0,
       protocol: 'https',
       key: undefined,
       cert: undefined,
-    };
-    const serverOptions = givenHttpServerConfig(options);
+    });
     const server = await givenAServer({rest: serverOptions});
 
     server.handler(dummyRequestHandler);
@@ -793,10 +845,10 @@ paths:
   it('creates a redirect route with a custom status code', async () => {
     const server = await givenAServer();
     server.controller(DummyController);
-    server.redirect('/page/html', '/html', 304);
+    server.redirect('/page/html', '/html', 307);
     const response = await createClientForHandler(server.requestHandler)
       .get('/page/html')
-      .expect(304);
+      .expect(307);
     await createClientForHandler(server.requestHandler)
       .get(response.header.location)
       .expect(200, 'Hi');
@@ -851,6 +903,14 @@ paths:
       expect(response.body.servers).to.containEql({url: '/api'});
     });
 
+    it('controls server urls even when set via server.basePath() API', async () => {
+      server.basePath('/v2');
+      const response = await createClientForHandler(server.requestHandler).get(
+        '/openapi.json',
+      );
+      expect(response.body.servers).to.containEql({url: '/v2'});
+    });
+
     it('controls redirect locations', async () => {
       server.controller(DummyController);
       server.redirect('/page/html', '/html');
@@ -869,7 +929,7 @@ paths:
     options.rest = givenHttpServerConfig(options.rest);
     const app = new Application(options);
     app.component(RestComponent);
-    return await app.getServer(RestServer);
+    return app.getServer(RestServer);
   }
 
   function dummyRequestHandler(handler: {

@@ -11,14 +11,15 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getFilterSchemaFor,
+  getModelSchemaRef,
   getWhereSchemaFor,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
 } from '@loopback/rest';
 import {Note} from '../models';
@@ -34,12 +35,21 @@ export class NoteController {
     responses: {
       '200': {
         description: 'Note model instance',
-        content: {'application/json': {schema: {'x-ts-type': Note}}},
+        content: {'application/json': {schema: getModelSchemaRef(Note)}},
       },
     },
   })
-  async create(@requestBody() note: Note): Promise<Note> {
-    return await this.noteRepository.create(note);
+  async create(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Note, {title: 'NewNote', exclude: ['id']}),
+        },
+      },
+    })
+    note: Omit<Note, 'id'>,
+  ): Promise<Note> {
+    return this.noteRepository.create(note);
   }
 
   @get('/notes/count', {
@@ -51,9 +61,9 @@ export class NoteController {
     },
   })
   async count(
-    @param.query.object('where', getWhereSchemaFor(Note)) where?: Where,
+    @param.query.object('where', getWhereSchemaFor(Note)) where?: Where<Note>,
   ): Promise<Count> {
-    return await this.noteRepository.count(where);
+    return this.noteRepository.count(where);
   }
 
   @get('/notes', {
@@ -62,16 +72,17 @@ export class NoteController {
         description: 'Array of Note model instances',
         content: {
           'application/json': {
-            schema: {type: 'array', items: {'x-ts-type': Note}},
+            schema: {type: 'array', items: getModelSchemaRef(Note)},
           },
         },
       },
     },
   })
   async find(
-    @param.query.object('filter', getFilterSchemaFor(Note)) filter?: Filter,
+    @param.query.object('filter', getFilterSchemaFor(Note))
+    filter?: Filter<Note>,
   ): Promise<Note[]> {
-    return await this.noteRepository.find(filter);
+    return this.noteRepository.find(filter);
   }
 
   @patch('/notes', {
@@ -83,22 +94,29 @@ export class NoteController {
     },
   })
   async updateAll(
-    @requestBody() note: Note,
-    @param.query.object('where', getWhereSchemaFor(Note)) where?: Where,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Note, {partial: true}),
+        },
+      },
+    })
+    note: Partial<Note>,
+    @param.query.object('where', getWhereSchemaFor(Note)) where?: Where<Note>,
   ): Promise<Count> {
-    return await this.noteRepository.updateAll(note, where);
+    return this.noteRepository.updateAll(note, where);
   }
 
   @get('/notes/{id}', {
     responses: {
       '200': {
         description: 'Note model instance',
-        content: {'application/json': {schema: {'x-ts-type': Note}}},
+        content: {'application/json': {schema: getModelSchemaRef(Note)}},
       },
     },
   })
   async findById(@param.path.number('id') id: number): Promise<Note> {
-    return await this.noteRepository.findById(id);
+    return this.noteRepository.findById(id);
   }
 
   @patch('/notes/{id}', {
@@ -110,7 +128,14 @@ export class NoteController {
   })
   async updateById(
     @param.path.number('id') id: number,
-    @requestBody() note: Note,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Note, {partial: true}),
+        },
+      },
+    })
+    note: Partial<Note>,
   ): Promise<void> {
     await this.noteRepository.updateById(id, note);
   }

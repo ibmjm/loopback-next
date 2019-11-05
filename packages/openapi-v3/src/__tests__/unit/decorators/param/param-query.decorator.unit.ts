@@ -3,9 +3,8 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {get, param, getControllerSpec} from '../../../..';
 import {expect} from '@loopback/testlab';
-import {ParameterObject} from '@loopback/openapi-v3-types';
+import {get, getControllerSpec, param, ParameterObject} from '../../../..';
 
 describe('Routing metadata for parameters', () => {
   describe('@param.query.string', () => {
@@ -225,7 +224,7 @@ describe('Routing metadata for parameters', () => {
     it('sets in:query style:deepObject and a default schema', () => {
       class MyController {
         @get('/greet')
-        greet(@param.query.object('filter') filter: Object) {}
+        greet(@param.query.object('filter') filter: object) {}
       }
       const expectedParamSpec = <ParameterObject>{
         name: 'filter',
@@ -251,7 +250,7 @@ describe('Routing metadata for parameters', () => {
               limit: {type: 'number'},
             },
           })
-          filter: Object,
+          filter: object,
         ) {}
       }
       const expectedParamSpec: ParameterObject = {
@@ -269,6 +268,46 @@ describe('Routing metadata for parameters', () => {
       };
       expectSpecToBeEqual(MyController, expectedParamSpec);
     });
+  });
+
+  it('allows additional properties for parameter object', () => {
+    class MyController {
+      @get('/greet')
+      greet(@param.query.string('name', {description: 'Name'}) name: string) {}
+    }
+    const expectedParamSpec = {
+      name: 'name',
+      in: 'query',
+      description: 'Name',
+      schema: {
+        type: 'string',
+      },
+    };
+    expectSpecToBeEqual(MyController, expectedParamSpec);
+  });
+
+  it('allows additional spec properties for @param.query.object', () => {
+    class MyController {
+      @get('/greet')
+      greet(
+        @param.query.object('filter', undefined, {
+          description: 'Search criteria',
+        })
+        filter: object,
+      ) {}
+    }
+    const expectedParamSpec = <ParameterObject>{
+      name: 'filter',
+      in: 'query',
+      description: 'Search criteria',
+      style: 'deepObject',
+      explode: true,
+      schema: {
+        type: 'object',
+        additionalProperties: true,
+      },
+    };
+    expectSpecToBeEqual(MyController, expectedParamSpec);
   });
 });
 

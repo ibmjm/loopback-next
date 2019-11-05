@@ -16,7 +16,7 @@ import {
   RepositoryMixin,
 } from '../../..';
 
-// tslint:disable:no-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 describe('RepositoryMixin', () => {
   it('mixed class has .repository()', () => {
@@ -113,7 +113,7 @@ describe('RepositoryMixin', () => {
 
     it('skips datasources not implementing schema migrations', async () => {
       class OtherDataSource implements DataSource {
-        name: string = 'other';
+        name = 'other';
         connector = undefined;
         settings = {};
       }

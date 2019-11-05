@@ -8,7 +8,7 @@ import {
   OpenApiSpec,
   OperationObject,
   SchemasObject,
-} from '@loopback/openapi-v3-types';
+} from '@loopback/openapi-v3';
 import * as express from 'express';
 import {RequestHandler} from 'express';
 import {PathParams} from 'express-serve-static-core';
@@ -34,7 +34,7 @@ export type ExpressRequestHandler = express.RequestHandler;
  * _after_ no LB4 route (controller or handler based) matched the incoming
  * request.
  *
- * @private
+ * @internal
  */
 export class ExternalExpressRoutes {
   protected _externalRoutes: express.Router = express.Router();

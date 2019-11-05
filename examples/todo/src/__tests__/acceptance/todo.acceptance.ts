@@ -14,12 +14,14 @@ import {
 import {TodoListApplication} from '../../application';
 import {Todo} from '../../models/';
 import {TodoRepository} from '../../repositories/';
+import {GeocoderService} from '../../services';
 import {
   aLocation,
   getProxiedGeoCoderConfig,
   givenCachingProxy,
   givenTodo,
   HttpCachingProxy,
+  isGeoCoderServiceAvailable,
 } from '../helpers';
 
 describe('TodoApplication', () => {
@@ -34,6 +36,14 @@ describe('TodoApplication', () => {
   before(givenRunningApplicationWithCustomConfiguration);
   after(() => app.stop());
 
+  let available = true;
+  before(async function() {
+    // eslint-disable-next-line no-invalid-this
+    this.timeout(30 * 1000);
+    const service = await app.get<GeocoderService>('services.GeocoderService');
+    available = await isGeoCoderServiceAvailable(service);
+  });
+
   before(givenTodoRepository);
   before(() => {
     client = createRestAppClient(app);
@@ -46,7 +56,7 @@ describe('TodoApplication', () => {
   it('creates a todo', async function() {
     // Set timeout to 30 seconds as `post /todos` triggers geocode look up
     // over the internet and it takes more than 2 seconds
-    // tslint:disable-next-line:no-invalid-this
+    // eslint-disable-next-line no-invalid-this
     this.timeout(30000);
     const todo = givenTodo();
     const response = await client
@@ -67,9 +77,20 @@ describe('TodoApplication', () => {
       .expect(422);
   });
 
+  it('rejects requests with input that contains excluded properties', async () => {
+    const todo = givenTodo();
+    todo.id = 1;
+    await client
+      .post('/todos')
+      .send(todo)
+      .expect(422);
+  });
+
   it('creates an address-based reminder', async function() {
+    // eslint-disable-next-line no-invalid-this
+    if (!available) return this.skip();
     // Increase the timeout to accommodate slow network connections
-    // tslint:disable-next-line:no-invalid-this
+    // eslint-disable-next-line no-invalid-this
     this.timeout(30000);
 
     const todo = givenTodo({remindAtAddress: aLocation.address});
@@ -126,7 +147,6 @@ describe('TodoApplication', () => {
 
     it('updates the todo by ID ', async () => {
       const updatedTodo = givenTodo({
-        title: 'DO SOMETHING AWESOME',
         isComplete: true,
       });
       await client
@@ -215,6 +235,6 @@ describe('TodoApplication', () => {
   }
 
   async function givenTodoInstance(todo?: Partial<Todo>) {
-    return await todoRepo.create(givenTodo(todo));
+    return todoRepo.create(givenTodo(todo));
   }
 });

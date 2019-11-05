@@ -3,9 +3,9 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {TestSandbox, expect} from '../..';
+import {pathExists, readFile, remove, writeJSON} from 'fs-extra';
 import {resolve} from 'path';
-import {remove, pathExists, readFile, writeJSON} from 'fs-extra';
+import {expect, TestSandbox} from '../..';
 
 const FIXTURES = resolve(__dirname, '../../../fixtures');
 
@@ -58,11 +58,27 @@ describe('TestSandbox integration tests', () => {
     const sourceMapString = `//# sourceMappingURL=${resolvedFile}.map`;
 
     await sandbox.copyFile(resolvedFile);
-    let fileContents = (await readFile(resolve(path, file), 'utf8')).split(
+    const fileContents = (await readFile(resolve(path, file), 'utf8')).split(
       '\n',
     );
 
     expect(fileContents.pop()).to.equal(sourceMapString);
+  });
+
+  it('creates a JSON file in the sandbox', async () => {
+    await sandbox.writeJsonFile('data.json', {key: 'value'});
+    const fullPath = resolve(path, 'data.json');
+    expect(await pathExists(fullPath)).to.be.True();
+    const content = await readFile(fullPath, 'utf-8');
+    expect(content).to.equal('{\n  "key": "value"\n}\n');
+  });
+
+  it('creates a text file in the sandbox', async () => {
+    await sandbox.writeTextFile('data.txt', 'Hello');
+    const fullPath = resolve(path, 'data.txt');
+    expect(await pathExists(fullPath)).to.be.True();
+    const content = await readFile(fullPath, 'utf-8');
+    expect(content).to.equal('Hello');
   });
 
   it('resets the sandbox', async () => {
@@ -90,8 +106,7 @@ describe('TestSandbox integration tests', () => {
   });
 
   describe('after deleting sandbox', () => {
-    const ERR: string =
-      'TestSandbox instance was deleted. Create a new instance.';
+    const ERR = 'TestSandbox instance was deleted. Create a new instance.';
 
     beforeEach(callSandboxDelete);
 

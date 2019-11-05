@@ -13,12 +13,13 @@ import {
 } from '@loopback/context';
 import {Application, CoreBindings, Server} from '@loopback/core';
 import {HttpServer, HttpServerOptions} from '@loopback/http-server';
-import {getControllerSpec} from '@loopback/openapi-v3';
 import {
+  getControllerSpec,
+  OpenAPIObject,
   OpenApiSpec,
   OperationObject,
   ServerObject,
-} from '@loopback/openapi-v3-types';
+} from '@loopback/openapi-v3';
 import {AssertionError} from 'assert';
 import * as cors from 'cors';
 import * as debugFactory from 'debug';
@@ -82,6 +83,8 @@ const cloneDeep: <T>(value: T) => T = require('lodash/cloneDeep');
 /**
  * A REST API server for use with Loopback.
  * Add this server to your application by importing the RestComponent.
+ *
+ * @example
  * ```ts
  * const app = new MyApplication();
  * app.component(RestComponent);
@@ -103,11 +106,6 @@ const cloneDeep: <T>(value: T) => T = require('lodash/cloneDeep');
  * // OR
  * const server = await app.get('servers.foo');
  * ```
- *
- * @export
- * @class RestServer
- * @extends {Context}
- * @implements {Server}
  */
 export class RestServer extends Context implements Server, HttpServerLike {
   /**
@@ -126,8 +124,8 @@ export class RestServer extends Context implements Server, HttpServerLike {
    * httpServer.listen(3000);
    * ```
    *
-   * @param req The request.
-   * @param res The response.
+   * @param req - The request.
+   * @param res - The response.
    */
 
   protected _requestHandler: HttpRequestListener;
@@ -175,12 +173,12 @@ export class RestServer extends Context implements Server, HttpServerLike {
   }
 
   /**
-   * @memberof RestServer
+   *
    * Creates an instance of RestServer.
    *
-   * @param {Application} app The application instance (injected via
+   * @param app - The application instance (injected via
    * CoreBindings.APPLICATION_INSTANCE).
-   * @param {RestServerConfig=} config The configuration options (injected via
+   * @param config - The configuration options (injected via
    * RestBindings.CONFIG).
    *
    */
@@ -195,6 +193,7 @@ export class RestServer extends Context implements Server, HttpServerLike {
 
     this.bind(RestBindings.PORT).to(this.config.port);
     this.bind(RestBindings.HOST).to(config.host);
+    this.bind(RestBindings.PATH).to(config.path);
     this.bind(RestBindings.PROTOCOL).to(config.protocol || 'http');
     this.bind(RestBindings.HTTPS_OPTIONS).to(config as ServerOptions);
 
@@ -263,25 +262,50 @@ export class RestServer extends Context implements Server, HttpServerLike {
    */
   protected _setupOpenApiSpecEndpoints() {
     if (this.config.openApiSpec.disabled) return;
-    // NOTE(bajtos) Regular routes are handled through Sequence.
-    // IMO, this built-in endpoint should not run through a Sequence,
-    // because it's not part of the application API itself.
-    // E.g. if the app implements access/audit logs, I don't want
-    // this endpoint to trigger a log entry. If the server implements
-    // content-negotiation to support XML clients, I don't want the OpenAPI
-    // spec to be converted into an XML response.
     const mapping = this.config.openApiSpec.endpointMapping!;
     // Serving OpenAPI spec
     for (const p in mapping) {
-      this._expressApp.get(p, (req, res) =>
-        this._serveOpenApiSpec(req, res, mapping[p]),
-      );
+      this.addOpenApiSpecEndpoint(p, mapping[p]);
     }
 
     const explorerPaths = ['/swagger-ui', '/explorer'];
     this._expressApp.get(explorerPaths, (req, res, next) =>
       this._redirectToSwaggerUI(req, res, next),
     );
+  }
+
+  /**
+   * Add a new non-controller endpoint hosting a form of the OpenAPI spec.
+   *
+   * @param path Path at which to host the copy of the OpenAPI
+   * @param form Form that should be renedered from that path
+   */
+  addOpenApiSpecEndpoint(path: string, form: OpenApiSpecForm) {
+    if (this._expressApp) {
+      // if the app is already started, try to hot-add it
+      // this only actually "works" mid-startup, once this._handleHttpRequest
+      // has been added to express, adding any later routes won't work
+
+      // NOTE(bajtos) Regular routes are handled through Sequence.
+      // IMO, this built-in endpoint should not run through a Sequence,
+      // because it's not part of the application API itself.
+      // E.g. if the app implements access/audit logs, I don't want
+      // this endpoint to trigger a log entry. If the server implements
+      // content-negotiation to support XML clients, I don't want the OpenAPI
+      // spec to be converted into an XML response.
+      this._expressApp.get(path, (req, res) =>
+        this._serveOpenApiSpec(req, res, form),
+      );
+    } else {
+      // if the app is not started, add the mapping to the config
+      const mapping = this.config.openApiSpec.endpointMapping!;
+      if (path in mapping) {
+        throw new Error(
+          `The path ${path} is already configured for OpenApi hosting`,
+        );
+      }
+      mapping[path] = form;
+    }
   }
 
   protected _handleHttpRequest(request: Request, response: Response) {
@@ -401,21 +425,7 @@ export class RestServer extends Context implements Server, HttpServerLike {
     );
 
     specForm = specForm || {version: '3.0.0', format: 'json'};
-    let specObj = this.getApiSpec();
-    if (this.config.openApiSpec.setServersFromRequest) {
-      specObj = Object.assign({}, specObj);
-      specObj.servers = [{url: requestContext.requestedBaseUrl}];
-    }
-
-    const basePath = requestContext.basePath;
-    if (specObj.servers && basePath) {
-      for (const s of specObj.servers) {
-        // Update the default server url to honor `basePath`
-        if (s.url === '/') {
-          s.url = basePath;
-        }
-      }
-    }
+    const specObj = this.getApiSpec(requestContext);
 
     if (specForm.format === 'json') {
       const spec = JSON.stringify(specObj, null, 2);
@@ -451,18 +461,19 @@ export class RestServer extends Context implements Server, HttpServerLike {
     const baseUrl = protocol === 'http' ? config.httpUrl : config.url;
     const openApiUrl = `${requestContext.requestedBaseUrl}/openapi.json`;
     const fullUrl = `${baseUrl}?url=${openApiUrl}`;
-    response.redirect(308, fullUrl);
+    response.redirect(302, fullUrl);
   }
 
   /**
    * Register a controller class with this server.
    *
-   * @param {Constructor} controllerCtor The controller class
+   * @param controllerCtor - The controller class
    * (constructor function).
-   * @returns {Binding} The newly created binding, you can use the reference to
+   * @returns The newly created binding, you can use the reference to
    * further modify the binding, e.g. lock the value to prevent further
    * modifications.
    *
+   * @example
    * ```ts
    * class MyController {
    * }
@@ -479,6 +490,7 @@ export class RestServer extends Context implements Server, HttpServerLike {
   /**
    * Register a new Controller-based route.
    *
+   * @example
    * ```ts
    * class MyController {
    *   greet(name: string) {
@@ -488,12 +500,12 @@ export class RestServer extends Context implements Server, HttpServerLike {
    * app.route('get', '/greet', operationSpec, MyController, 'greet');
    * ```
    *
-   * @param verb HTTP verb of the endpoint
-   * @param path URL path of the endpoint
-   * @param spec The OpenAPI spec describing the endpoint (operation)
-   * @param controllerCtor Controller constructor
-   * @param controllerFactory A factory function to create controller instance
-   * @param methodName The name of the controller method
+   * @param verb - HTTP verb of the endpoint
+   * @param path - URL path of the endpoint
+   * @param spec - The OpenAPI spec describing the endpoint (operation)
+   * @param controllerCtor - Controller constructor
+   * @param controllerFactory - A factory function to create controller instance
+   * @param methodName - The name of the controller method
    */
   route<I>(
     verb: string,
@@ -507,6 +519,7 @@ export class RestServer extends Context implements Server, HttpServerLike {
   /**
    * Register a new route invoking a handler function.
    *
+   * @example
    * ```ts
    * function greet(name: string) {
    *  return `hello ${name}`;
@@ -514,10 +527,10 @@ export class RestServer extends Context implements Server, HttpServerLike {
    * app.route('get', '/', operationSpec, greet);
    * ```
    *
-   * @param verb HTTP verb of the endpoint
-   * @param path URL path of the endpoint
-   * @param spec The OpenAPI spec describing the endpoint (operation)
-   * @param handler The function to invoke with the request parameters
+   * @param verb - HTTP verb of the endpoint
+   * @param path - URL path of the endpoint
+   * @param spec - The OpenAPI spec describing the endpoint (operation)
+   * @param handler - The function to invoke with the request parameters
    * described in the spec.
    */
   route(
@@ -530,6 +543,7 @@ export class RestServer extends Context implements Server, HttpServerLike {
   /**
    * Register a new generic route.
    *
+   * @example
    * ```ts
    * function greet(name: string) {
    *  return `hello ${name}`;
@@ -538,7 +552,7 @@ export class RestServer extends Context implements Server, HttpServerLike {
    * app.route(route);
    * ```
    *
-   * @param route The route to add.
+   * @param route - The route to add.
    */
   route(route: RouteEntry): Binding;
 
@@ -609,15 +623,16 @@ export class RestServer extends Context implements Server, HttpServerLike {
   /**
    * Register a route redirecting callers to a different URL.
    *
+   * @example
    * ```ts
    * server.redirect('/explorer', '/explorer/');
    * ```
    *
-   * @param fromPath URL path of the redirect endpoint
-   * @param toPathOrUrl Location (URL path or full URL) where to redirect to.
+   * @param fromPath - URL path of the redirect endpoint
+   * @param toPathOrUrl - Location (URL path or full URL) where to redirect to.
    * If your server is configured with a custom `basePath`, then the base path
    * is prepended to the target location.
-   * @param statusCode HTTP status code to respond with,
+   * @param statusCode - HTTP status code to respond with,
    *   defaults to 303 (See Other).
    */
   redirect(
@@ -638,10 +653,10 @@ export class RestServer extends Context implements Server, HttpServerLike {
   /**
    * Mount static assets to the REST server.
    * See https://expressjs.com/en/4x/api.html#express.static
-   * @param path The path(s) to serve the asset.
+   * @param path - The path(s) to serve the asset.
    * See examples at https://expressjs.com/en/4x/api.html#path-examples
-   * @param rootDir The root directory from which to serve static assets
-   * @param options Options for serve-static
+   * @param rootDir - The root directory from which to serve static assets
+   * @param options - Options for serve-static
    */
   static(path: PathParams, rootDir: string, options?: ServeStaticOptions) {
     this._externalRoutes.registerAssets(path, rootDir, options);
@@ -655,9 +670,9 @@ export class RestServer extends Context implements Server, HttpServerLike {
    * Note that this will override any routes defined via decorators at the
    * controller level (this function takes precedent).
    *
-   * @param {OpenApiSpec} spec The OpenAPI specification, as an object.
-   * @returns {Binding}
-   * @memberof RestServer
+   * @param spec - The OpenAPI specification, as an object.
+   * @returns Binding for the spec
+   *
    */
   api(spec: OpenApiSpec): Binding {
     return this.bind(RestBindings.API_SPEC).to(spec);
@@ -672,9 +687,20 @@ export class RestServer extends Context implements Server, HttpServerLike {
    *  - `app.controller(MyController)`
    *  - `app.route(route)`
    *  - `app.route('get', '/greet', operationSpec, MyController, 'greet')`
+   *
+   * If the optional `requestContext` is provided, then the `servers` list
+   * in the returned spec will be updated to work in that context.
+   * Specifically:
+   * 1. if `config.openApi.setServersFromRequest` is enabled, the servers
+   * list will be replaced with the context base url
+   * 2. Any `servers` entries with a path of `/` will have that path
+   * replaced with `requestContext.basePath`
+   *
+   * @param requestContext - Optional context to update the `servers` list
+   * in the returned spec
    */
-  getApiSpec(): OpenApiSpec {
-    const spec = this.getSync<OpenApiSpec>(RestBindings.API_SPEC);
+  getApiSpec(requestContext?: RequestContext): OpenApiSpec {
+    let spec = this.getSync<OpenApiSpec>(RestBindings.API_SPEC);
     const defs = this.httpHandler.getApiDefinitions();
 
     // Apply deep clone to prevent getApiSpec() callers from
@@ -686,12 +712,47 @@ export class RestServer extends Context implements Server, HttpServerLike {
     }
 
     assignRouterSpec(spec, this._externalRoutes.routerSpec);
+
+    if (requestContext) {
+      spec = this.updateSpecFromRequest(spec, requestContext);
+    }
+
+    return spec;
+  }
+
+  /**
+   * Update or rebuild OpenAPI Spec object to be appropriate for the context of a specific request for the spec, leveraging both app config and request path information.
+   *
+   * @param spec base spec object from which to start
+   * @param requestContext request to use to infer path information
+   * @returns Updated or rebuilt spec object to use in the context of the request
+   */
+  private updateSpecFromRequest(
+    spec: OpenAPIObject,
+    requestContext: RequestContext,
+  ) {
+    if (this.config.openApiSpec.setServersFromRequest) {
+      spec = Object.assign({}, spec);
+      spec.servers = [{url: requestContext.requestedBaseUrl}];
+    }
+
+    const basePath = requestContext.basePath;
+    if (spec.servers && basePath) {
+      for (const s of spec.servers) {
+        // Update the default server url to honor `basePath`
+        if (s.url === '/') {
+          s.url = basePath;
+        }
+      }
+    }
+
     return spec;
   }
 
   /**
    * Configure a custom sequence class for handling incoming requests.
    *
+   * @example
    * ```ts
    * class MySequence implements SequenceHandler {
    *   constructor(
@@ -704,7 +765,7 @@ export class RestServer extends Context implements Server, HttpServerLike {
    * }
    * ```
    *
-   * @param value The sequence to invoke for each incoming request.
+   * @param value - The sequence to invoke for each incoming request.
    */
   public sequence(value: Constructor<SequenceHandler>) {
     this.bind(RestBindings.SEQUENCE).toClass(value);
@@ -713,13 +774,14 @@ export class RestServer extends Context implements Server, HttpServerLike {
   /**
    * Configure a custom sequence function for handling incoming requests.
    *
+   * @example
    * ```ts
    * app.handler(({request, response}, sequence) => {
    *   sequence.send(response, 'hello world');
    * });
    * ```
    *
-   * @param handlerFn The handler to invoke for each incoming request.
+   * @param handlerFn - The handler to invoke for each incoming request.
    */
   public handler(handlerFn: SequenceFunction) {
     class SequenceFromFunction extends DefaultSequence {
@@ -746,8 +808,8 @@ export class RestServer extends Context implements Server, HttpServerLike {
 
   /**
    * Bind a body parser to the server context
-   * @param parserClass Body parser class
-   * @param address Optional binding address
+   * @param parserClass - Body parser class
+   * @param address - Optional binding address
    */
   bodyParser(
     bodyParserClass: Constructor<BodyParser>,
@@ -760,9 +822,9 @@ export class RestServer extends Context implements Server, HttpServerLike {
 
   /**
    * Configure the `basePath` for the rest server
-   * @param path Base path
+   * @param path - Base path
    */
-  basePath(path: string = '') {
+  basePath(path = '') {
     if (this._requestHandler) {
       throw new Error(
         'Base path cannot be set as the request handler has been created',
@@ -772,13 +834,11 @@ export class RestServer extends Context implements Server, HttpServerLike {
     path = path.replace(/(^\/)|(\/$)/, '');
     if (path) path = '/' + path;
     this._basePath = path;
+    this.config.basePath = path;
   }
 
   /**
    * Start this REST API's HTTP/HTTPS server.
-   *
-   * @returns {Promise<void>}
-   * @memberof RestServer
    */
   async start(): Promise<void> {
     // Set up the Express app if not done yet
@@ -789,12 +849,20 @@ export class RestServer extends Context implements Server, HttpServerLike {
 
     const port = await this.get(RestBindings.PORT);
     const host = await this.get(RestBindings.HOST);
+    const path = await this.get(RestBindings.PATH);
     const protocol = await this.get(RestBindings.PROTOCOL);
     const httpsOptions = await this.get(RestBindings.HTTPS_OPTIONS);
 
+    if (this.config.listenOnStart === false) {
+      debug(
+        'RestServer is not listening as listenOnStart flag is set to false.',
+      );
+      return;
+    }
+
     const serverOptions = {};
     if (protocol === 'https') Object.assign(serverOptions, httpsOptions);
-    Object.assign(serverOptions, {port, host, protocol});
+    Object.assign(serverOptions, {port, host, protocol, path});
 
     this._httpServer = new HttpServer(this.requestHandler, serverOptions);
 
@@ -808,9 +876,6 @@ export class RestServer extends Context implements Server, HttpServerLike {
 
   /**
    * Stop this REST API's HTTP/HTTPS server.
-   *
-   * @returns {Promise<void>}
-   * @memberof RestServer
    */
   async stop() {
     // Kill the server instance.
@@ -837,9 +902,9 @@ export class RestServer extends Context implements Server, HttpServerLike {
    * Mount an Express router to expose additional REST endpoints handled
    * via legacy Express-based stack.
    *
-   * @param basePath Path where to mount the router at, e.g. `/` or `/api`.
-   * @param router The Express router to handle the requests.
-   * @param spec A partial OpenAPI spec describing endpoints provided by the
+   * @param basePath - Path where to mount the router at, e.g. `/` or `/api`.
+   * @param router - The Express router to handle the requests.
+   * @param spec - A partial OpenAPI spec describing endpoints provided by the
    * router. LoopBack will prepend `basePath` to all endpoints automatically.
    * This argument is optional. You can leave it out if you don't want to
    * document the routes.
@@ -855,8 +920,8 @@ export class RestServer extends Context implements Server, HttpServerLike {
 
 /**
  * Create a binding for the given body parser class
- * @param parserClass Body parser class
- * @param key Optional binding address
+ * @param parserClass - Body parser class
+ * @param key - Optional binding address
  */
 export function createBodyParserBinding(
   parserClass: Constructor<BodyParser>,
@@ -872,8 +937,6 @@ export function createBodyParserBinding(
 
 /**
  * The form of OpenAPI specs to be served
- *
- * @interface OpenApiSpecForm
  */
 export interface OpenApiSpecForm {
   version?: string;
@@ -945,6 +1008,7 @@ export type RestServerOptions = Partial<RestServerResolvedOptions>;
 
 export interface RestServerResolvedOptions {
   port: number;
+  path?: string;
 
   /**
    * Base path for API/static routes
@@ -955,16 +1019,20 @@ export interface RestServerResolvedOptions {
   apiExplorer: ApiExplorerOptions;
   requestBodyParser?: RequestBodyParserOptions;
   sequence?: Constructor<SequenceHandler>;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expressSettings: {[name: string]: any};
   router: RestRouterOptions;
+
+  /**
+   * Set this flag to `false` to not listen on connections when the REST server
+   * is started. It's useful to mount a LoopBack REST server as a route to the
+   * facade Express application. If not set, the value is default to `true`.
+   */
+  listenOnStart?: boolean;
 }
 
 /**
  * Valid configuration for the RestServer constructor.
- *
- * @export
- * @interface RestServerConfig
  */
 export type RestServerConfig = RestServerOptions & HttpServerOptions;
 
@@ -985,14 +1053,14 @@ const DEFAULT_CONFIG: RestServerResolvedConfig = {
   },
   expressSettings: {},
   router: {},
+  listenOnStart: true,
 };
 
 function resolveRestServerConfig(
   config: RestServerConfig,
 ): RestServerResolvedConfig {
   const result: RestServerResolvedConfig = Object.assign(
-    {},
-    DEFAULT_CONFIG,
+    cloneDeep(DEFAULT_CONFIG),
     config,
   );
 
@@ -1006,8 +1074,11 @@ function resolveRestServerConfig(
     result.host = undefined;
   }
 
-  if (!result.openApiSpec.endpointMapping)
-    result.openApiSpec.endpointMapping = OPENAPI_SPEC_MAPPING;
+  if (!result.openApiSpec.endpointMapping) {
+    // mapping may be mutated by addOpenApiSpecEndpoint, be sure that doesn't
+    // pollute the default mapping configuration
+    result.openApiSpec.endpointMapping = cloneDeep(OPENAPI_SPEC_MAPPING);
+  }
 
   result.apiExplorer = normalizeApiExplorerConfig(config.apiExplorer);
 

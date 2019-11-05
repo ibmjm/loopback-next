@@ -3,6 +3,227 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.6](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.10.5...@loopback/core@1.10.6) (2019-10-24)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.10.5](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.10.4...@loopback/core@1.10.5) (2019-10-07)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.10.4](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.10.3...@loopback/core@1.10.4) (2019-09-28)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.10.3](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.10.2...@loopback/core@1.10.3) (2019-09-27)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.10.2](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.10.1...@loopback/core@1.10.2) (2019-09-17)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.10.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.10.0...@loopback/core@1.10.1) (2019-09-06)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+# [1.10.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.9.3...@loopback/core@1.10.0) (2019-09-03)
+
+
+### Features
+
+* **core:** allow application to accept a parent context ([ee50007](https://github.com/strongloop/loopback-next/commit/ee50007))
+
+
+
+
+
+## [1.9.3](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.9.2...@loopback/core@1.9.3) (2019-08-19)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.9.2](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.9.1...@loopback/core@1.9.2) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.9.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.9.0...@loopback/core@1.9.1) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+# [1.9.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.7...@loopback/core@1.9.0) (2019-07-31)
+
+
+### Features
+
+* **boot:** improve service booter to load classes decorated with [@bind](https://github.com/bind) ([48e01f4](https://github.com/strongloop/loopback-next/commit/48e01f4))
+* **core:** add app.service() to register service classes or providers ([88eff77](https://github.com/strongloop/loopback-next/commit/88eff77))
+
+
+
+
+
+## [1.8.7](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.6...@loopback/core@1.8.7) (2019-07-26)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.8.6](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.5...@loopback/core@1.8.6) (2019-07-17)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.8.5](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.4...@loopback/core@1.8.5) (2019-06-28)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.8.4](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.3...@loopback/core@1.8.4) (2019-06-21)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.8.3](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.2...@loopback/core@1.8.3) (2019-06-20)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.8.2](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.1...@loopback/core@1.8.2) (2019-06-17)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.8.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.0...@loopback/core@1.8.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+# [1.8.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.7.3...@loopback/core@1.8.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.7.3](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.7.2...@loopback/core@1.7.3) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.7.2](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.7.1...@loopback/core@1.7.2) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.7.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.7.0...@loopback/core@1.7.1) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+# [1.7.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.6.3...@loopback/core@1.7.0) (2019-05-14)
+
+
+### Features
+
+* **context:** add binding comparator to sort bindings ([ae3d61f](https://github.com/strongloop/loopback-next/commit/ae3d61f))
+
+
+
+
+
+## [1.6.3](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.6.2...@loopback/core@1.6.3) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.6.2](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.6.1...@loopback/core@1.6.2) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.6.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.6.0...@loopback/core@1.6.1) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
 # [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.5.0...@loopback/core@1.6.0) (2019-04-26)
 
 

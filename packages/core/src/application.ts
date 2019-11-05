@@ -6,9 +6,13 @@
 import {
   Binding,
   BindingScope,
+  bindingTemplateFor,
   Constructor,
   Context,
+  ContextTags,
   createBindingFromClass,
+  isProviderClass,
+  Provider,
 } from '@loopback/context';
 import * as debugFactory from 'debug';
 import {Component, mountComponent} from './component';
@@ -28,8 +32,28 @@ const debug = debugFactory('loopback:core:application');
  * and models.
  */
 export class Application extends Context implements LifeCycleObserver {
-  constructor(public options: ApplicationConfig = {}) {
-    super('application');
+  public readonly options: ApplicationConfig;
+
+  /**
+   * Create an application with the given parent context
+   * @param parent - Parent context
+   */
+  constructor(parent: Context);
+  /**
+   * Create an application with the given configuration and parent context
+   * @param config - Application configuration
+   * @param parent - Parent context
+   */
+  constructor(config?: ApplicationConfig, parent?: Context);
+
+  constructor(configOrParent?: ApplicationConfig | Context, parent?: Context) {
+    super(
+      configOrParent instanceof Context ? configOrParent : parent,
+      'application',
+    );
+
+    if (configOrParent instanceof Context) configOrParent = {};
+    this.options = configOrParent || {};
 
     // Bind the life cycle observer registry
     this.bind(CoreBindings.LIFE_CYCLE_OBSERVER_REGISTRY)
@@ -38,19 +62,20 @@ export class Application extends Context implements LifeCycleObserver {
     // Bind to self to allow injection of application context in other modules.
     this.bind(CoreBindings.APPLICATION_INSTANCE).to(this);
     // Make options available to other modules as well.
-    this.bind(CoreBindings.APPLICATION_CONFIG).to(options);
+    this.bind(CoreBindings.APPLICATION_CONFIG).to(this.options);
   }
 
   /**
    * Register a controller class with this application.
    *
-   * @param controllerCtor {Function} The controller class
+   * @param controllerCtor - The controller class
    * (constructor function).
-   * @param {string=} name Optional controller name, default to the class name
-   * @return {Binding} The newly created binding, you can use the reference to
+   * @param name - Optional controller name, default to the class name
+   * @returns The newly created binding, you can use the reference to
    * further modify the binding, e.g. lock the value to prevent further
    * modifications.
    *
+   * @example
    * ```ts
    * class MyController {
    * }
@@ -74,6 +99,7 @@ export class Application extends Context implements LifeCycleObserver {
    * Each server constructor added in this way must provide a unique prefix
    * to prevent binding overlap.
    *
+   * @example
    * ```ts
    * app.server(RestServer);
    * // This server constructor will be bound under "servers.RestServer".
@@ -81,10 +107,10 @@ export class Application extends Context implements LifeCycleObserver {
    * // This server instance will be bound under "servers.v1API".
    * ```
    *
-   * @param {Constructor<Server>} server The server constructor.
-   * @param {string=} name Optional override for key name.
-   * @returns {Binding} Binding for the server class
-   * @memberof Application
+   * @param server - The server constructor.
+   * @param name - Optional override for key name.
+   * @returns Binding for the server class
+   *
    */
   public server<T extends Server>(
     ctor: Constructor<T>,
@@ -107,6 +133,7 @@ export class Application extends Context implements LifeCycleObserver {
    * Each server added in this way will automatically be named based on the
    * class constructor name with the "servers." prefix.
    *
+   * @remarks
    * If you wish to control the binding keys for particular server instances,
    * use the app.server function instead.
    * ```ts
@@ -118,22 +145,22 @@ export class Application extends Context implements LifeCycleObserver {
    * // "servers.GRPCServer";
    * ```
    *
-   * @param {Constructor<Server>[]} ctors An array of Server constructors.
-   * @returns {Binding[]} An array of bindings for the registered server classes
-   * @memberof Application
+   * @param ctors - An array of Server constructors.
+   * @returns An array of bindings for the registered server classes
+   *
    */
   public servers<T extends Server>(ctors: Constructor<T>[]): Binding[] {
     return ctors.map(ctor => this.server(ctor));
   }
 
   /**
-   * Retrieve the singleton instance for a bound constructor.
+   * Retrieve the singleton instance for a bound server.
    *
-   * @template T
-   * @param {Constructor<T>=} ctor The constructor that was used to make the
+   * @typeParam T - Server type
+   * @param ctor - The constructor that was used to make the
    * binding.
-   * @returns {Promise<T>}
-   * @memberof Application
+   * @returns A Promise of server instance
+   *
    */
   public async getServer<T extends Server>(
     target: Constructor<T> | string,
@@ -146,14 +173,11 @@ export class Application extends Context implements LifeCycleObserver {
       const ctor = target as Constructor<T>;
       key = `${CoreBindings.SERVERS}.${ctor.name}`;
     }
-    return await this.get<T>(key);
+    return this.get<T>(key);
   }
 
   /**
    * Start the application, and all of its registered observers.
-   *
-   * @returns {Promise}
-   * @memberof Application
    */
   public async start(): Promise<void> {
     const registry = await this.getLifeCycleObserverRegistry();
@@ -162,8 +186,6 @@ export class Application extends Context implements LifeCycleObserver {
 
   /**
    * Stop the application instance and all of its registered observers.
-   * @returns {Promise}
-   * @memberof Application
    */
   public async stop(): Promise<void> {
     const registry = await this.getLifeCycleObserverRegistry();
@@ -171,16 +193,17 @@ export class Application extends Context implements LifeCycleObserver {
   }
 
   private async getLifeCycleObserverRegistry() {
-    return await this.get(CoreBindings.LIFE_CYCLE_OBSERVER_REGISTRY);
+    return this.get(CoreBindings.LIFE_CYCLE_OBSERVER_REGISTRY);
   }
 
   /**
    * Add a component to this application and register extensions such as
    * controllers, providers, and servers from the component.
    *
-   * @param componentCtor The component class to add.
-   * @param {string=} name Optional component name, default to the class name
+   * @param componentCtor - The component class to add.
+   * @param name - Optional component name, default to the class name
    *
+   * @example
    * ```ts
    *
    * export class ProductComponent {
@@ -217,7 +240,7 @@ export class Application extends Context implements LifeCycleObserver {
    * Set application metadata. `@loopback/boot` calls this method to populate
    * the metadata from `package.json`.
    *
-   * @param metadata Application metadata
+   * @param metadata - Application metadata
    */
   public setMetadata(metadata: ApplicationMetadata) {
     this.bind(CoreBindings.APPLICATION_METADATA).to(metadata);
@@ -225,8 +248,8 @@ export class Application extends Context implements LifeCycleObserver {
 
   /**
    * Register a life cycle observer class
-   * @param ctor A class implements LifeCycleObserver
-   * @param name Optional name for the life cycle observer
+   * @param ctor - A class implements LifeCycleObserver
+   * @param name - Optional name for the life cycle observer
    */
   public lifeCycleObserver<T extends LifeCycleObserver>(
     ctor: Constructor<T>,
@@ -242,6 +265,73 @@ export class Application extends Context implements LifeCycleObserver {
     this.add(binding);
     return binding;
   }
+
+  /**
+   * Add a service to this application.
+   *
+   * @param cls - The service or provider class
+   *
+   * @example
+   *
+   * ```ts
+   * // Define a class to be bound via ctx.toClass()
+   * @bind({scope: BindingScope.SINGLETON})
+   * export class LogService {
+   *   log(msg: string) {
+   *     console.log(msg);
+   *   }
+   * }
+   *
+   * // Define a class to be bound via ctx.toProvider()
+   * const uuidv4 = require('uuid/v4');
+   * export class UuidProvider implements Provider<string> {
+   *   value() {
+   *     return uuidv4();
+   *   }
+   * }
+   *
+   * // Register the local services
+   * app.service(LogService);
+   * app.service(UuidProvider, 'uuid');
+   *
+   * export class MyController {
+   *   constructor(
+   *     @inject('services.uuid') private uuid: string,
+   *     @inject('services.LogService') private log: LogService,
+   *   ) {
+   *   }
+   *
+   *   greet(name: string) {
+   *     this.log(`Greet request ${this.uuid} received: ${name}`);
+   *     return `${this.uuid}: ${name}`;
+   *   }
+   * }
+   * ```
+   */
+  public service<S>(
+    cls: Constructor<S> | Constructor<Provider<S>>,
+    name?: string,
+  ): Binding<S> {
+    if (!name && isProviderClass(cls)) {
+      // Trim `Provider` from the default service name
+      // This is needed to keep backward compatibility
+      const templateFn = bindingTemplateFor(cls);
+      const template = Binding.bind<S>('template').apply(templateFn);
+      if (
+        template.tagMap[ContextTags.PROVIDER] &&
+        !template.tagMap[ContextTags.NAME]
+      ) {
+        // The class is a provider and no `name` tag is found
+        name = cls.name.replace(/Provider$/, '');
+      }
+    }
+    const binding = createBindingFromClass(cls, {
+      name,
+      type: 'service',
+    });
+    this.add(binding);
+    return binding;
+  }
 }
 
 /**
@@ -251,11 +341,11 @@ export interface ApplicationConfig {
   /**
    * Other properties
    */
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [prop: string]: any;
 }
 
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ControllerClass = Constructor<any>;
 
 /**

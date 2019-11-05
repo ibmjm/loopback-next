@@ -3,27 +3,31 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Provider, inject} from '@loopback/context';
-import {parseOperationArgs} from '../parser';
-import {RestBindings} from '../keys';
-import {ResolvedRoute} from '../router';
-import {Request, ParseParams} from '../types';
+import {inject, Provider} from '@loopback/context';
 import {RequestBodyParser} from '../body-parsers';
+import {RestBindings} from '../keys';
+import {parseOperationArgs} from '../parser';
+import {ResolvedRoute} from '../router';
+import {ParseParams, Request, RequestBodyParserOptions} from '../types';
 /**
  * Provides the function for parsing args in requests at runtime.
  *
- * @export
- * @class ParseParamsProvider
- * @implements {Provider<ParseParams>}
- * @returns {ParseParams} The handler function that will parse request args.
+ * @returns The handler function that will parse request args.
  */
 export class ParseParamsProvider implements Provider<ParseParams> {
   constructor(
     @inject(RestBindings.REQUEST_BODY_PARSER)
     private requestBodyParser: RequestBodyParser,
+    @inject(RestBindings.REQUEST_BODY_PARSER_OPTIONS, {optional: true})
+    private options: RequestBodyParserOptions = {},
   ) {}
   value() {
     return (request: Request, route: ResolvedRoute) =>
-      parseOperationArgs(request, route, this.requestBodyParser);
+      parseOperationArgs(
+        request,
+        route,
+        this.requestBodyParser,
+        this.options.validation,
+      );
   }
 }

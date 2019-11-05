@@ -8,14 +8,14 @@ permalink: /doc/en/lb4/Server.html
 
 ## Overview
 
-The [Server](https://apidocs.strongloop.com/@loopback%2fdocs/core.html#Server)
-interface defines the minimal required functions (start and stop) and a
-'listening' property to implement for a LoopBack application. Servers in
-LoopBack 4 are used to represent implementations for inbound transports and/or
-protocols such as REST over http, gRPC over http2, graphQL over https, etc. They
-typically listen for requests on a specific port, handle them, and return
-appropriate responses. A single application can have multiple server instances
-listening on different ports and working with different protocols.
+The [Server](https://loopback.io/doc/en/lb4/apidocs.core.server.html) interface
+defines the minimal required functions (start and stop) and a 'listening'
+property to implement for a LoopBack application. Servers in LoopBack 4 are used
+to represent implementations for inbound transports and/or protocols such as
+REST over http, gRPC over http2, graphQL over https, etc. They typically listen
+for requests on a specific port, handle them, and return appropriate responses.
+A single application can have multiple server instances listening on different
+ports and working with different protocols.
 
 ## Usage
 
@@ -290,20 +290,21 @@ for more details.
 
 ### `rest` options
 
-| Property          | Type                     | Purpose                                                                                                   |
-| ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| host              | string                   | Specify the hostname or ip address on which the RestServer will listen for traffic.                       |
-| port              | number                   | Specify the port on which the RestServer listens for traffic.                                             |
-| protocol          | string (http/https)      | Specify the protocol on which the RestServer listens for traffic.                                         |
-| basePath          | string                   | Specify the base path that RestServer exposes http endpoints.                                             |
-| key               | string                   | Specify the SSL private key for https.                                                                    |
-| cert              | string                   | Specify the SSL certificate for https.                                                                    |
-| cors              | CorsOptions              | Specify the CORS options.                                                                                 |
-| sequence          | SequenceHandler          | Use a custom SequenceHandler to change the behavior of the RestServer for the request-response lifecycle. |
-| openApiSpec       | OpenApiSpecOptions       | Customize how OpenAPI spec is served                                                                      |
-| apiExplorer       | ApiExplorerOptions       | Customize how API explorer is served                                                                      |
-| requestBodyParser | RequestBodyParserOptions | Customize how request body is parsed                                                                      |
-| router            | RouterOptions            | Customize how trailing slashes are used for routing                                                       |
+| Property          | Type                      | Purpose                                                                                                   |
+| ----------------- | ------------------------- | --------------------------------------------------------------------------------------------------------- |
+| host              | string                    | Specify the hostname or ip address on which the RestServer will listen for traffic.                       |
+| port              | number                    | Specify the port on which the RestServer listens for traffic.                                             |
+| protocol          | string (http/https)       | Specify the protocol on which the RestServer listens for traffic.                                         |
+| basePath          | string                    | Specify the base path that RestServer exposes http endpoints.                                             |
+| key               | string                    | Specify the SSL private key for https.                                                                    |
+| cert              | string                    | Specify the SSL certificate for https.                                                                    |
+| cors              | CorsOptions               | Specify the CORS options.                                                                                 |
+| sequence          | SequenceHandler           | Use a custom SequenceHandler to change the behavior of the RestServer for the request-response lifecycle. |
+| openApiSpec       | OpenApiSpecOptions        | Customize how OpenAPI spec is served                                                                      |
+| apiExplorer       | ApiExplorerOptions        | Customize how API explorer is served                                                                      |
+| requestBodyParser | RequestBodyParserOptions  | Customize how request body is parsed                                                                      |
+| router            | RouterOptions             | Customize how trailing slashes are used for routing                                                       |
+| listenOnStart     | boolean (default to true) | Control if the server should listen on http/https when it's started                                       |
 
 ## Add servers to application instance
 

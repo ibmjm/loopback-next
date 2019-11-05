@@ -3,6 +3,225 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.10](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.9...@loopback/boot@1.5.10) (2019-10-24)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.9](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.8...@loopback/boot@1.5.9) (2019-10-07)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.8](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.7...@loopback/boot@1.5.8) (2019-09-28)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.7](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.6...@loopback/boot@1.5.7) (2019-09-27)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.6](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.5...@loopback/boot@1.5.6) (2019-09-17)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.5](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.4...@loopback/boot@1.5.5) (2019-09-06)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.4](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.3...@loopback/boot@1.5.4) (2019-09-03)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.3](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.2...@loopback/boot@1.5.3) (2019-08-19)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.2](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.1...@loopback/boot@1.5.2) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.5.1](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.5.0...@loopback/boot@1.5.1) (2019-08-15)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+# [1.5.0](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.4.6...@loopback/boot@1.5.0) (2019-07-31)
+
+
+### Features
+
+* **boot:** improve service booter to load classes decorated with [@bind](https://github.com/bind) ([48e01f4](https://github.com/strongloop/loopback-next/commit/48e01f4))
+* **boot:** introduce `[@booter](https://github.com/booter)` to decorate booter classes ([f27b517](https://github.com/strongloop/loopback-next/commit/f27b517))
+* **boot:** use [@config](https://github.com/config) to inject options for booters ([016812d](https://github.com/strongloop/loopback-next/commit/016812d))
+
+
+
+
+
+## [1.4.6](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.4.5...@loopback/boot@1.4.6) (2019-07-26)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.4.5](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.4.4...@loopback/boot@1.4.5) (2019-07-17)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.4.4](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.4.3...@loopback/boot@1.4.4) (2019-06-28)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.4.3](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.4.2...@loopback/boot@1.4.3) (2019-06-21)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.4.2](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.4.1...@loopback/boot@1.4.2) (2019-06-20)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.4.1](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.4.0...@loopback/boot@1.4.1) (2019-06-17)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+# [1.4.0](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.3.0...@loopback/boot@1.4.0) (2019-06-06)
+
+
+### Features
+
+* **boot:** add a booter for interceptors ([467d6ea](https://github.com/strongloop/loopback-next/commit/467d6ea))
+
+
+
+
+
+# [1.3.0](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.10...@loopback/boot@1.3.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.2.10](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.9...@loopback/boot@1.2.10) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.2.9](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.8...@loopback/boot@1.2.9) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.2.8](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.7...@loopback/boot@1.2.8) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.2.7](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.6...@loopback/boot@1.2.7) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.2.6](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.5...@loopback/boot@1.2.6) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.2.5](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.4...@loopback/boot@1.2.5) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
+## [1.2.4](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.3...@loopback/boot@1.2.4) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/boot
+
+
+
+
+
 ## [1.2.3](https://github.com/strongloop/loopback-next/compare/@loopback/boot@1.2.2...@loopback/boot@1.2.3) (2019-04-26)
 
 **Note:** Version bump only for package @loopback/boot

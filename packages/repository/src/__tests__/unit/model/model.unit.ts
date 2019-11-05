@@ -4,8 +4,13 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {expect} from '@loopback/testlab';
-import {STRING} from '../../../';
-import {Entity, ModelDefinition} from '../../../';
+import {
+  Entity,
+  HasManyDefinition,
+  ModelDefinition,
+  RelationType,
+  STRING,
+} from '../../../';
 
 describe('model', () => {
   const customerDef = new ModelDefinition('Customer');
@@ -30,8 +35,10 @@ describe('model', () => {
   userDef
     .addProperty('id', {type: 'string', id: true})
     .addProperty('email', 'string')
+    .addProperty('password', 'string')
     .addProperty('firstName', String)
-    .addProperty('lastName', STRING);
+    .addProperty('lastName', STRING)
+    .addSetting('hiddenProperties', ['password']);
 
   const flexibleDef = new ModelDefinition('Flexible');
   flexibleDef
@@ -96,11 +103,11 @@ describe('model', () => {
     }
   }
 
-  // tslint:disable-next-line:no-unused
   class User extends Entity {
     static definition = userDef;
     id: string;
     email: string;
+    password: string;
     firstName: string;
 
     constructor(data?: Partial<User>) {
@@ -149,6 +156,15 @@ describe('model', () => {
     return customer;
   }
 
+  function createUser() {
+    const user = new User();
+    user.id = '123';
+    user.email = 'xyz@example.com';
+    user.password = '1234test';
+    user.firstName = 'Test User';
+    return user;
+  }
+
   it('adds properties', () => {
     expect(customerDef.name).to.eql('Customer');
     expect(customerDef.properties).have.properties(
@@ -192,6 +208,102 @@ describe('model', () => {
         {label: 'home', number: '111-222-3333'},
         {label: 'work', number: '111-222-5555'},
       ],
+    });
+  });
+
+  it('includes navigational properties in JSON (strict-mode)', () => {
+    class Category extends Entity {
+      id: number;
+      products: Product[];
+
+      constructor(data: Partial<Category>) {
+        super(data);
+      }
+    }
+
+    class Product extends Entity {
+      id: number;
+      categoryId: number;
+
+      constructor(data: Partial<Product>) {
+        super(data);
+      }
+    }
+
+    Category.definition = new ModelDefinition('Category')
+      .addSetting('strict', true)
+      .addProperty('id', {type: 'number', id: true, required: true})
+      .addRelation(<HasManyDefinition>{
+        name: 'products',
+        type: RelationType.hasMany,
+        targetsMany: true,
+
+        source: Category,
+        keyFrom: 'id',
+
+        target: () => Product,
+        keyTo: 'categoryId',
+      });
+
+    const category = new Category({
+      id: 1,
+      products: [new Product({id: 2, categoryId: 1})],
+    });
+
+    const data = category.toJSON();
+    expect(data).to.deepEqual({
+      id: 1,
+      products: [{id: 2, categoryId: 1}],
+    });
+  });
+
+  it('includes navigational properties in JSON (non-strict-mode)', () => {
+    class Category extends Entity {
+      id: number;
+      products: Product[];
+
+      // allow additional (free-form) properties
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      [propName: string]: any;
+
+      constructor(data: Partial<Category>) {
+        super(data);
+      }
+    }
+
+    class Product extends Entity {
+      id: number;
+      categoryId: number;
+
+      constructor(data: Partial<Product>) {
+        super(data);
+      }
+    }
+
+    Category.definition = new ModelDefinition('Category')
+      .addSetting('strict', false)
+      .addProperty('id', {type: 'number', id: true, required: true})
+      .addRelation(<HasManyDefinition>{
+        name: 'products',
+        type: RelationType.hasMany,
+        targetsMany: true,
+
+        source: Category,
+        keyFrom: 'id',
+
+        target: () => Product,
+        keyTo: 'categoryId',
+      });
+
+    const category = new Category({
+      id: 1,
+      products: [new Product({id: 2, categoryId: 1})],
+    });
+
+    const data = category.toJSON();
+    expect(data).to.deepEqual({
+      id: 1,
+      products: [{id: 2, categoryId: 1}],
     });
   });
 
@@ -294,6 +406,11 @@ describe('model', () => {
     expect(() => instance.getId()).to.throw(/missing.*id/);
   });
 
+  it('gets id names via a static method', () => {
+    const names = Customer.getIdProperties();
+    expect(names).to.deepEqual(['id']);
+  });
+
   it('reads model name from the definition', () => {
     expect(Customer.modelName).to.equal('Customer');
   });
@@ -301,5 +418,14 @@ describe('model', () => {
   it('reads model name from the class name', () => {
     class MyModel extends Entity {}
     expect(MyModel.modelName).to.equal('MyModel');
+  });
+
+  it('excludes hidden properties from toJSON() output', () => {
+    const user = createUser();
+    expect(user.toJSON()).to.eql({
+      id: '123',
+      email: 'xyz@example.com',
+      firstName: 'Test User',
+    });
   });
 });

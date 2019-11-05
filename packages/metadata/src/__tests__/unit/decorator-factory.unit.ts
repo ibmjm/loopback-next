@@ -6,11 +6,11 @@
 import {expect} from '@loopback/testlab';
 import {
   ClassDecoratorFactory,
-  PropertyDecoratorFactory,
-  MethodDecoratorFactory,
-  ParameterDecoratorFactory,
-  MethodParameterDecoratorFactory,
   DecoratorFactory,
+  MethodDecoratorFactory,
+  MethodParameterDecoratorFactory,
+  ParameterDecoratorFactory,
+  PropertyDecoratorFactory,
   Reflector,
 } from '../..';
 
@@ -80,6 +80,12 @@ describe('ClassDecoratorFactory', () => {
     return ClassDecoratorFactory.createDecorator('test', spec);
   }
 
+  function testDecorator(spec: object): ClassDecorator {
+    return ClassDecoratorFactory.createDecorator('test', spec, {
+      decoratorName: '@test',
+    });
+  }
+
   const xSpec = {x: 1};
   @classDecorator(xSpec)
   class BaseController {}
@@ -113,11 +119,20 @@ describe('ClassDecoratorFactory', () => {
     expect(() => {
       @classDecorator({x: 1})
       @classDecorator({y: 2})
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MyController {}
     }).to.throw(
-      /Decorator cannot be applied more than once on class MyController/,
+      /ClassDecorator cannot be applied more than once on class MyController/,
     );
+  });
+
+  it('throws with decoratorName if applied more than once on the target', () => {
+    expect(() => {
+      @testDecorator({x: 1})
+      @testDecorator({y: 2})
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      class MyController {}
+    }).to.throw(/@test cannot be applied more than once on class MyController/);
   });
 });
 
@@ -352,7 +367,7 @@ describe('PropertyDecoratorFactory', () => {
 
   it('throws if applied more than once on the same property', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MyController {
         @propertyDecorator({x: 1})
         @propertyDecorator({y: 2})
@@ -400,7 +415,7 @@ describe('PropertyDecoratorFactory for static properties', () => {
 
   it('throws if applied more than once on the same static property', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MyController {
         @propertyDecorator({x: 1})
         @propertyDecorator({y: 2})
@@ -448,7 +463,7 @@ describe('MethodDecoratorFactory', () => {
 
   it('throws if applied more than once on the same method', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MyController {
         @methodDecorator({x: 1})
         @methodDecorator({y: 2})
@@ -496,7 +511,7 @@ describe('MethodDecoratorFactory for static methods', () => {
 
   it('throws if applied more than once on the same static method', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MyController {
         @methodDecorator({x: 1})
         @methodDecorator({y: 2})
@@ -545,7 +560,7 @@ describe('ParameterDecoratorFactory', () => {
 
   it('throws if applied more than once on the same parameter', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MyController {
         myMethod(
           @parameterDecorator({x: 1})
@@ -634,7 +649,7 @@ describe('ParameterDecoratorFactory for a static method', () => {
 
   it('throws if applied more than once on the same parameter', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MyController {
         static myMethod(
           @parameterDecorator({x: 1})
@@ -690,12 +705,14 @@ describe('MethodParameterDecoratorFactory with invalid decorations', () => {
    * @param spec
    */
   function methodParameterDecorator(spec: object): MethodDecorator {
-    return MethodParameterDecoratorFactory.createDecorator('test', spec);
+    return MethodParameterDecoratorFactory.createDecorator('test', spec, {
+      decoratorName: '@param',
+    });
   }
 
   it('reports error if the # of decorations exceeeds the # of params', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class MyController {
         @methodParameterDecorator({x: 1}) // Causing error
         @methodParameterDecorator({x: 2}) // For a
@@ -703,7 +720,7 @@ describe('MethodParameterDecoratorFactory with invalid decorations', () => {
         myMethod(a: string, b: number) {}
       }
     }).to.throw(
-      /The decorator is used more than 2 time\(s\) on MyController\.prototype\.myMethod\(\)/,
+      /@param is used more than 2 time\(s\) on MyController\.prototype\.myMethod\(\)/,
     );
   });
 });

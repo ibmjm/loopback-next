@@ -5,10 +5,11 @@
 
 import {Context, instantiateClass} from '@loopback/context';
 import {Request} from '@loopback/rest';
+import {securityId, UserProfile} from '@loopback/security';
 import {expect} from '@loopback/testlab';
-import {Strategy} from 'passport';
-import {AuthenticateFn, AuthenticationBindings, UserProfile} from '../../..';
+import {AuthenticateFn, AuthenticationBindings} from '../../..';
 import {AuthenticateActionProvider} from '../../../providers';
+import {AuthenticationStrategy} from '../../../types';
 import {MockStrategy} from '../fixtures/mock-strategy';
 
 describe('AuthenticateActionProvider', () => {
@@ -30,7 +31,7 @@ describe('AuthenticateActionProvider', () => {
     let strategy: MockStrategy;
     let currentUser: UserProfile | undefined;
 
-    const mockUser: UserProfile = {name: 'user-name', id: 'mock-id'};
+    const mockUser: UserProfile = {name: 'user-name', [securityId]: 'mock-id'};
 
     beforeEach(givenAuthenticateActionProvider);
 
@@ -65,9 +66,11 @@ describe('AuthenticateActionProvider', () => {
         expect(user).to.be.equal(mockUser);
       });
 
-      it('throws an error if the injected passport strategy is not valid', async () => {
+      it('throws an error if the injected strategy is not valid', async () => {
         const context: Context = new Context();
-        context.bind(AuthenticationBindings.STRATEGY).to({} as Strategy);
+        context
+          .bind(AuthenticationBindings.STRATEGY)
+          .to({} as AuthenticationStrategy);
         context
           .bind(AuthenticationBindings.AUTH_ACTION)
           .toProvider(AuthenticateActionProvider);
@@ -81,7 +84,10 @@ describe('AuthenticateActionProvider', () => {
         } catch (exception) {
           error = exception;
         }
-        expect(error).to.have.property('message', 'invalid strategy parameter');
+        expect(error).to.have.property(
+          'message',
+          'strategy.authenticate is not a function',
+        );
       });
 
       it('throws Unauthorized error when authentication fails', async () => {
